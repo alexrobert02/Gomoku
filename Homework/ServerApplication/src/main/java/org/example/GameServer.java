@@ -4,19 +4,21 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GameServer {
     private int port;
     private ServerSocket serverSocket;
     private boolean running;
-    private List<Game> games;
+    private Map<String, Game> games;
     private List<ClientThread> clientThreads;
 
     public GameServer(int port) {
         this.port = port;
         this.running = true;
-        this.games = new ArrayList<>();
+        this.games = new HashMap<>();
         this.clientThreads = new ArrayList<>();
     }
 
@@ -61,18 +63,26 @@ public class GameServer {
             if (clientThread.getGame() == null) {
                 // Set the lobby name
                 String lobbyName = parts[1];
-                Game game = new Game();
-                game.setLobbyName(lobbyName);
-                // Create a new player and add them to the game
-                Player player = new Player(parts[2], 'X', clientThread.getClientSocket());
-                game.join(player);
-                games.add(game);
-                clientThread.setGame(game);
+                Game gameSearch = findGameByLobbyName(lobbyName);
+                if(gameSearch == null) {
+                    Game game = new Game();
+                    game.setLobbyName(lobbyName);
+                    // Create a new player and add them to the game
+                    Player player = new Player(parts[2], 'X', clientThread.getClientSocket());
+                    boolean joined = game.join(player);
+                    if (joined) {
+                        games.put(lobbyName, game);
+                        clientThread.setGame(game);
 
-                // Send confirmation message to the client
-                clientThread.sendResponse("GAME_CREATED");
-                System.out.println("Player " + player.getName() + " joined the game: " + player.getSymbol());
-                broadcastMessage("Player " + player.getName() + " joined the game: " + player.getSymbol());
+                        // Send confirmation message to the client
+                        clientThread.sendResponse("GAME_CREATED");
+                        System.out.println("Player " + player.getName() + " joined the game: " + player.getSymbol());
+                        broadcastMessage("Player " + player.getName() + " joined the game: " + player.getSymbol());
+                    }
+                }
+                else {
+                    clientThread.sendResponse("NAME_TAKEN");
+                }
             } else {
                 clientThread.sendResponse("GAME_UNAVAILABLE");
             }
@@ -166,7 +176,7 @@ public class GameServer {
 
     // Helper method to find a game by lobby name
     private Game findGameByLobbyName(String lobbyName) {
-        for (Game game : games) {
+        for (Game game : games.values()) {
             if (game.getLobbyName().equals(lobbyName)) {
                 return game;
             }
