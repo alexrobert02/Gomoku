@@ -22,7 +22,7 @@ public class GameClient {
 
     public static void main(String[] args) {
         // Create a new GameClient instance and start the client
-        GameClient gameClient = new GameClient("localhost", 8000);
+        GameClient gameClient = new GameClient("localhost", 8095);
         gameClient.start();
     }
 
