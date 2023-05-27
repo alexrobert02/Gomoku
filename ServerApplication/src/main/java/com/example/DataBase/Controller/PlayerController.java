@@ -1,5 +1,7 @@
-package com.example;
+package com.example.DataBase.Controller;
 
+import com.example.DataBase.DataBasePlayer;
+import com.example.DataBase.Repository.PlayerRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

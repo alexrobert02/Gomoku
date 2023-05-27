@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.example.DataBase.DataBasePlayer;
+import com.example.DataBase.GameHistory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 

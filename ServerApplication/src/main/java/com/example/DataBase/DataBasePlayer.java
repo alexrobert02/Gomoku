@@ -1,4 +1,4 @@
-package com.example;
+package com.example.DataBase;
 
 import jakarta.persistence.*;
 
