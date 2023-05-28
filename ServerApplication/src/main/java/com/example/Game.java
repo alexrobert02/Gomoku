@@ -1,5 +1,7 @@
 package com.example;
 
+import com.example.DataBase.GameHistory;
+
 import java.net.Socket;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -17,7 +19,7 @@ class Game {
     private int currentPlayerTimeRemaining;
     private long turnStartTime;
 
-    public Game() {
+    public Game(GameHistory gameDb) {
         board = new Board();
         players = new Player[2];
         currentPlayerIndex = 0;
@@ -31,7 +33,6 @@ class Game {
     }
 
     public synchronized boolean join(Player player) {
-
 
         if (isPlayerNameTaken(player.getName())) {
             return false; // Player name is already taken

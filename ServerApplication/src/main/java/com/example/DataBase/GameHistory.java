@@ -79,4 +79,16 @@ public class GameHistory {
     public String getName() {
         return name;
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }
