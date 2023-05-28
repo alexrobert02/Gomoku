@@ -88,9 +88,9 @@ public class GameClient extends Application {
     public void sendMessage() {
         if (!gameIsOver) {
             String message = ui.getInputText();
-            if (message.equalsIgnoreCase("exit")) {
-                gameIsOver = true;
-            }
+//            if (message.equalsIgnoreCase("exit")) {
+//                gameIsOver = true;
+//            }
             out.println(message);
             ui.clearInputField();
         }

@@ -12,6 +12,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -66,7 +67,20 @@ public class GameClientUI extends Application {
         loginBox.setAlignment(Pos.CENTER);
         loginBox.getChildren().addAll(usernameField, loginButton);
         loginRoot.setCenter(loginBox);
-        loginRoot.setBackground(new Background(new BackgroundFill(Color.GRAY, CornerRadii.EMPTY, Insets.EMPTY)));
+        loginRoot.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        Label usernameLabel = new Label("USERNAME");
+        usernameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 48));
+        usernameLabel.setTextFill(Color.BLACK);
+        usernameLabel.setAlignment(Pos.CENTER);
+        usernameLabel.setPadding(new Insets(50));
+
+        StackPane usernamePane = new StackPane(usernameLabel);
+        usernamePane.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        BorderPane.setAlignment(usernamePane, Pos.CENTER);
+        BorderPane.setMargin(usernamePane, new Insets(50));
+        loginRoot.setTop(usernamePane);
 
         Scene loginScene = new Scene(loginRoot, 800, 600);
         stage.setScene(loginScene);
@@ -89,7 +103,7 @@ public class GameClientUI extends Application {
         VBox inputBox = new VBox(10);
         inputBox.getChildren().addAll(inputField, sendButton);
         root.setBottom(inputBox);
-        root.setBackground(new Background(new BackgroundFill(Color.GRAY, CornerRadii.EMPTY, Insets.EMPTY)));
+        root.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
 
         Scene gameScene = new Scene(root, 800, 600);
         stage.setScene(gameScene);
@@ -128,7 +142,7 @@ public class GameClientUI extends Application {
         buttonBox.getChildren().add(joinButton); // Add the "Join" button to the VBox
 
         root.setCenter(buttonBox); // Set the VBox as the bottom of the BorderPane
-        root.setBackground(new Background(new BackgroundFill(Color.GRAY, CornerRadii.EMPTY, Insets.EMPTY)));
+        root.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
 
         Scene gameScene = new Scene(root, 800, 600);
         stage.setScene(gameScene);
@@ -141,20 +155,38 @@ public class GameClientUI extends Application {
         hostStage.setTitle("Create Game");
 
         BorderPane hostRoot = new BorderPane();
-        hostRoot.setPadding(new Insets(10));
+        hostRoot.setPadding(new Insets(10, 10, 10, 10));
+        hostRoot.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
 
-        VBox inputBox = new VBox(10);
-        inputBox.setAlignment(Pos.CENTER);
+        Label gameDataLabel = new Label("Game Data");
+        gameDataLabel.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        gameDataLabel.setTextFill(Color.BLACK);
+        gameDataLabel.setPadding(new Insets(50,10,10,10));
+        hostRoot.setTop(gameDataLabel);
+        BorderPane.setAlignment(gameDataLabel, Pos.CENTER);
 
-        Label timeLimitLabel = new Label("Time Limit (in seconds):");
+        GridPane inputGrid = new GridPane();
+        inputGrid.setAlignment(Pos.CENTER);
+        inputGrid.setHgap(10);
+        inputGrid.setVgap(10);
+
+        Label timeLimitLabel = new Label("Time limit (in seconds)");
         TextField timeLimitField = new TextField();
         timeLimitField.setPrefWidth(200);
 
-        Label roundsLabel = new Label("Number of Rounds:");
+        Label roundsLabel = new Label("Number of rounds");
         TextField roundsField = new TextField();
         roundsField.setPrefWidth(200);
 
+        Label lobbyNameLabel = new Label("Lobby name ");
+        TextField lobbyNameField = new TextField();
+        lobbyNameField.setPrefWidth(200);
+
         Button createGameButton = new Button("CREATE GAME");
+        createGameButton.setMinWidth(100); // Set minimum width for the button
+        createGameButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY))); // Set button background color
+        createGameButton.setTextFill(Color.WHITE); // Set button text color
+        createGameButton.setFont(Font.font(15)); // Set font size for the button text
         createGameButton.setOnAction(e -> {
             String timeLimit = timeLimitField.getText();
             String rounds = roundsField.getText();
@@ -163,18 +195,28 @@ public class GameClientUI extends Application {
             hostStage.close();
         });
 
-        inputBox.getChildren().addAll(timeLimitLabel, timeLimitField, roundsLabel, roundsField, createGameButton);
+        inputGrid.add(lobbyNameField, 0, 0);
+        inputGrid.add(lobbyNameLabel, 1, 0);
 
-        hostRoot.setCenter(inputBox);
+        inputGrid.add(timeLimitField, 0, 1);
+        inputGrid.add(timeLimitLabel, 1, 1);
+
+        inputGrid.add(roundsField, 0, 2);
+        inputGrid.add(roundsLabel, 1, 2);
+
+        hostRoot.setCenter(inputGrid);
+        hostRoot.setBottom(createGameButton);
+        BorderPane.setAlignment(createGameButton, Pos.CENTER); // Align the button at the center
 
         Scene hostScene = new Scene(hostRoot, 400, 300);
         hostStage.setScene(hostScene);
         hostStage.showAndWait();
     }
 
+
     public void startGame() {
         if (loggedIn) {
-            showGameSceneTest();
+            showGameScene();
             gameClient.connectToServer();
         }
     }
