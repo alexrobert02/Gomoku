@@ -13,6 +13,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -69,20 +70,20 @@ public class GameClientUI extends Application {
         loginRoot.setCenter(loginBox);
         loginRoot.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
 
-        Label usernameLabel = new Label("USERNAME");
-        usernameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 48));
+        Label usernameLabel = new Label("Insert your username");
+        usernameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 35));
         usernameLabel.setTextFill(Color.BLACK);
         usernameLabel.setAlignment(Pos.CENTER);
-        usernameLabel.setPadding(new Insets(50));
+        usernameLabel.setPadding(new Insets(50, 0, 0, 0));
 
         StackPane usernamePane = new StackPane(usernameLabel);
         usernamePane.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
 
         BorderPane.setAlignment(usernamePane, Pos.CENTER);
-        BorderPane.setMargin(usernamePane, new Insets(50));
+        BorderPane.setMargin(usernamePane, new Insets(50, 0, 0, 0));
         loginRoot.setTop(usernamePane);
 
-        Scene loginScene = new Scene(loginRoot, 800, 600);
+        Scene loginScene = new Scene(loginRoot, 1000, 600);
         stage.setScene(loginScene);
         stage.show();
     }
@@ -105,7 +106,7 @@ public class GameClientUI extends Application {
         root.setBottom(inputBox);
         root.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
 
-        Scene gameScene = new Scene(root, 800, 600);
+        Scene gameScene = new Scene(root, 1000, 600);
         stage.setScene(gameScene);
         stage.show();
     }
@@ -144,7 +145,7 @@ public class GameClientUI extends Application {
         root.setCenter(buttonBox); // Set the VBox as the bottom of the BorderPane
         root.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
 
-        Scene gameScene = new Scene(root, 800, 600);
+        Scene gameScene = new Scene(root, 1000, 600);
         stage.setScene(gameScene);
         stage.show();
     }
@@ -193,6 +194,7 @@ public class GameClientUI extends Application {
             // Process the input and create the game
             //createGame(timeLimit, rounds);
             hostStage.close();
+            showStartScene();
         });
 
         inputGrid.add(lobbyNameField, 0, 0);
@@ -211,6 +213,96 @@ public class GameClientUI extends Application {
         Scene hostScene = new Scene(hostRoot, 400, 300);
         hostStage.setScene(hostScene);
         hostStage.showAndWait();
+    }
+
+    public void showStartScene() {
+        BorderPane startRoot = new BorderPane();
+        //startRoot.setPadding(new Insets(10, 10, 10, 10));
+
+        // Create the arrow button
+        Button backButton = new Button("←");
+        backButton.setMinWidth(150);
+        backButton.setFont(Font.font(20));
+        backButton.setAlignment(Pos.TOP_LEFT);
+        backButton.setOnAction(e -> {
+            showGameScene();
+        });
+
+        // Apply CSS styles to center the arrow inside the button
+        backButton.setStyle("-fx-alignment: center; -fx-content-display: center;");
+        backButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY)));
+        startRoot.setTop(backButton);
+
+        VBox centerContainer = new VBox(20);
+        centerContainer.setAlignment(Pos.CENTER);
+
+        Button startButton = new Button("Start");
+        startButton.setMinWidth(400);
+        startButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY)));
+        startButton.setTextFill(Color.WHITE);
+        startButton.setFont(Font.font(20));
+        startButton.setOnAction(e -> {
+            showGameBoardScene();
+        });
+
+        Label gameLobbyLabel = new Label("Game lobby:                                                      ");
+        gameLobbyLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        gameLobbyLabel.setTextFill(Color.BLACK);
+        gameLobbyLabel.setPadding(new Insets(10, 0, 0, 0)); // Adjust the padding for positioning
+
+        VBox.setMargin(gameLobbyLabel, new Insets(0, 0, 40, 0)); // Add margin to the bottom of the label
+        VBox.setMargin(startButton, new Insets(40, 0, 0, 0)); // Add margin to the top of the button
+
+        centerContainer.getChildren().addAll(gameLobbyLabel, startButton);
+        startRoot.setCenter(centerContainer);
+
+        startRoot.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        Scene gameScene = new Scene(startRoot, 1000, 600);
+        stage.setScene(gameScene);
+        stage.show();
+    }
+
+    public void showGameBoardScene() {
+        BorderPane gameBoardRoot = new BorderPane();
+        gameBoardRoot.setPadding(new Insets(10, 10, 10, 10));
+        gameBoardRoot.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        // Game board dimensions
+        int rows = 10;
+        int columns = 10;
+
+        // Create a GridPane to hold the game board cells
+        GridPane gameBoardGrid = new GridPane();
+        gameBoardGrid.setAlignment(Pos.CENTER);
+        gameBoardGrid.setHgap(5);
+        gameBoardGrid.setVgap(5);
+
+        // Add cells to the game board
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < columns; col++) {
+                // Create a label to represent a game board cell
+                Label cellLabel = new Label();
+                cellLabel.setPrefSize(40, 40);
+                cellLabel.setStyle("-fx-border-color: black;");
+                cellLabel.setOnMouseClicked(e -> {
+                    // Fill the entire cell with an "X"
+                    cellLabel.setTextFill(Color.BLACK);
+                    cellLabel.setFont(Font.font("Arial", FontWeight.BOLD, 33));
+                    cellLabel.setText("X");
+                    cellLabel.setAlignment(Pos.CENTER);
+                });
+
+                // Add the cell label to the grid
+                gameBoardGrid.add(cellLabel, col, row);
+            }
+        }
+
+        gameBoardRoot.setCenter(gameBoardGrid);
+
+        Scene gameScene = new Scene(gameBoardRoot, 1000, 600);
+        stage.setScene(gameScene);
+        stage.show();
     }
 
 
