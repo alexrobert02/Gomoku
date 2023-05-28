@@ -3,11 +3,13 @@ package com.example;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.sql.Connection;
 
 import com.example.DataBase.DataBasePlayer;
 import com.example.DataBase.GameHistory;
@@ -78,12 +80,14 @@ public class GameServer {
                      * adaugam playerul in baza de date
                      */
                     DataBasePlayer dbPlayer = new DataBasePlayer(player.getName());
-                    DataBasePlayer addedPlayer = restTemplate.postForObject("http://localhost:8000/api/players", dbPlayer, DataBasePlayer.class);
-                    System.out.println("Added Player: " + addedPlayer.getName()+addedPlayer.getId());
+                   // DataBasePlayer addedPlayer = restTemplate.postForObject("http://localhost:8000/api/players", dbPlayer, DataBasePlayer.class);
+                   // System.out.println("Added Player: " + addedPlayer.getName()+addedPlayer.getId());
+                    triggerToInsertPlayerToDatabase(dbPlayer);
                     /**
                      * adaugam jocul creat in baza de date
                      */
-                    GameHistory dbGame = new GameHistory(lobbyName,addedPlayer.getId(),null, LocalDateTime.now(),null,"running");
+                    DataBasePlayer dbPlayerForId=findPlayerByNameInDb(dbPlayer.getName());
+                    GameHistory dbGame = new GameHistory(lobbyName, dbPlayerForId.getId(),null, LocalDateTime.now(),null,"running");
                     GameHistory addedGame = restTemplate.postForObject("http://localhost:8000/api/game-history", dbGame, GameHistory.class);
                     System.out.println("Added Game: " + addedGame.getId());
                     boolean joined = game.join(player);
@@ -162,6 +166,7 @@ public class GameServer {
                     broadcastMessage("Player " + player.getName() + " made a move at (" + row + ", " + col + ")");
                     game.makeMove(player, row, col);
                     if (game.isGameOver()) {
+                        exportDataToCSV();
                         clientThread.sendResponse("EXIT");
                         stop();
                     }
@@ -251,6 +256,58 @@ public class GameServer {
             }
         } catch (IOException e) {
             System.err.println("Error stopping server on port " + port + ": " + e.getMessage());
+        }
+    }
+
+    public void exportDataToCSV() {
+        String url = "jdbc:postgresql://localhost:5432/Gomoku";
+        String username = "postgres";
+        String password = "password";
+
+        try {
+            // Establish a connection to the PostgreSQL database
+            Connection connection = DriverManager.getConnection(url, username, password);
+
+            // Call the stored procedure
+            CallableStatement statement = connection.prepareCall("CALL export_data()");
+            statement.execute();
+
+            // Close the statement and connection
+            statement.close();
+            connection.close();
+
+            System.out.println("Data exported successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    // trigger
+    private void triggerToInsertPlayerToDatabase(DataBasePlayer player) {
+        String url = "jdbc:postgresql://localhost:5432/Gomoku";
+        String username = "postgres";
+        String password = "AnaMaria";
+
+        try {
+            // Establish a connection to the PostgreSQL database
+            Connection connection = DriverManager.getConnection(url, username, password);
+
+            // Prepare the SQL statement for inserting a player
+            String sql = "INSERT INTO player (name) VALUES (?)";
+            PreparedStatement statement = connection.prepareStatement(sql);
+
+            // Set the player name as a parameter
+            statement.setString(1, player.getName());
+
+            // Execute the SQL statement
+            statement.executeUpdate();
+
+            // Close the statement and connection
+            statement.close();
+            connection.close();
+
+            System.out.println("Player inserted successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
