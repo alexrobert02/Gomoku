@@ -166,6 +166,8 @@ public class GameServer {
                     broadcastMessage("Player " + player.getName() + " made a move at (" + row + ", " + col + ")");
                     game.makeMove(player, row, col);
                     if (game.isGameOver()) {
+                        GameHistory gameDb=findGameByLobbyNameInDb(game.getLobbyName());
+                        restTemplate.put("http://localhost:8000/api/game-history/{id}/status?status={status}", null,gameDb.getId(),"stopped");
                         exportDataToCSV();
                         clientThread.sendResponse("EXIT");
                         stop();
@@ -179,9 +181,6 @@ public class GameServer {
             System.out.println("aici");
             // Handle client exit
             Game game = clientThread.getGame();
-            GameHistory gameDb=findGameByLobbyNameInDb(game.getLobbyName());
-           // System.out.println(gameDb.getName());
-            restTemplate.put("http://localhost:8000/api/game-history/{id}/status?status={status}", null,gameDb.getId(),"stopped");
             Player player = game.getPlayerBySocket(clientThread.getClientSocket());
             DataBasePlayer dbplayer =findPlayerByNameInDb(player.getName());
             restTemplate.delete("http://localhost:8095/api/players/{id}", dbplayer.getId());
