@@ -31,4 +31,10 @@ public class GameHistoryController {
         game.setPlayer2Id(playerId); // Update the player's id
         return gameHistoryRepository.save(game); // Save the updated game
     }
+    @PutMapping("/{id}/status")
+    public GameHistory updateGameStatus(@PathVariable Long id, @RequestParam String status) {
+        GameHistory game = gameHistoryRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Game not found"));
+        game.setStatus(status); // Update the game's status
+        return gameHistoryRepository.save(game); // Save the updated game
+    }
 }

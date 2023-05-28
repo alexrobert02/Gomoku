@@ -69,8 +69,8 @@ public class GameServer {
                  * verificam daca numele jocului(lobby-ul exista deja)
                  */
                 GameHistory gameDb= findGameByLobbyNameInDb(lobbyName);
-                if(gameDb ==null) {
-                    Game game = new Game();
+                if(gameDb ==null || gameDb.getStatus().equals("stopped")) {
+                    Game game = new Game(gameDb);
                     game.setLobbyName(lobbyName);
                     // Create a new player and add them to the game
                     Player player = new Player(parts[2], 'X', clientThread.getClientSocket());
@@ -171,9 +171,15 @@ public class GameServer {
                 }
             }
         } else if (action.equalsIgnoreCase("exit")) {
+            System.out.println("aici");
             // Handle client exit
             Game game = clientThread.getGame();
+            GameHistory gameDb=findGameByLobbyNameInDb(game.getLobbyName());
+           // System.out.println(gameDb.getName());
+            restTemplate.put("http://localhost:8000/api/game-history/{id}/status?status={status}", null,gameDb.getId(),"stopped");
             Player player = game.getPlayerBySocket(clientThread.getClientSocket());
+            DataBasePlayer dbplayer =findPlayerByNameInDb(player.getName());
+            restTemplate.delete("http://localhost:8095/api/players/{id}", dbplayer.getId());
             if (player != null) {
                 game.removePlayer(player);
                 System.out.println("Player " + player.getName() + " has left the game");
@@ -225,7 +231,16 @@ public class GameServer {
         return null; // Game not found
     }
 
-
+    private DataBasePlayer findPlayerByNameInDb(String Name) {
+        DataBasePlayer[] dataBasePlayers = restTemplate.getForObject("http://localhost:8000/api/players", DataBasePlayer[].class);
+        for (DataBasePlayer player : dataBasePlayers) {
+            if(player.getName().equals(Name))
+            {
+                return player;
+            }
+        }
+        return null; // player not found
+    }
     public void stop() {
         // Stop the server
         running = false;
