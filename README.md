@@ -1,4 +1,4 @@
 # Proiect-Java
 
-*Constantin Ana-Maria
-*Zaharia Robert-Alexandru
+* Constantin Ana-Maria
+* Zaharia Robert-Alexandru
