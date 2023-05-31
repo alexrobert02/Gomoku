@@ -24,6 +24,10 @@ public class GameClientUI extends Application {
     private Button sendButton;
     private GameClient gameClient;
     private boolean loggedIn;
+    private String username;
+    private int playerIndex;
+    private boolean playerTurn;
+    private Label[][] gameBoardCells;;
 
     public GameClientUI(GameClient gameClient) {
         this.gameClient = gameClient;
@@ -35,6 +39,9 @@ public class GameClientUI extends Application {
 
     public void appendMessage(String message) {
         Platform.runLater(() -> chatArea.appendText(message + "\n"));
+    }
+    public void notifyTurn () {
+        Platform.runLater(() -> playerTurn = true);
     }
 
     public String getInputText() {
@@ -61,6 +68,7 @@ public class GameClientUI extends Application {
         loginButton.setOnAction(e -> {
             gameClient.setUsername(usernameField.getText());
             loggedIn = true;
+            username = usernameField.getText();
             startGame();
         });
 
@@ -129,9 +137,7 @@ public class GameClientUI extends Application {
         hostButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY))); // Set button background color
         hostButton.setTextFill(Color.WHITE); // Set button text color
         hostButton.setFont(Font.font(20)); // Set font size for the button text
-        hostButton.setOnAction(e -> {
-            showHostWindow();
-        });
+        hostButton.setOnAction(e -> showHostWindow());
         buttonBox.getChildren().add(hostButton); // Add the "Host" button to the VBox
 
         Button joinButton = new Button("Join");
@@ -140,12 +146,74 @@ public class GameClientUI extends Application {
         joinButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY))); // Set button background color
         joinButton.setTextFill(Color.WHITE); // Set button text color
         joinButton.setFont(Font.font(20)); // Set font size for the button text
+        joinButton.setOnAction(e -> showJoinWindow());
         buttonBox.getChildren().add(joinButton); // Add the "Join" button to the VBox
 
         root.setCenter(buttonBox); // Set the VBox as the bottom of the BorderPane
         root.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
 
         Scene gameScene = new Scene(root, 1000, 600);
+        stage.setScene(gameScene);
+        stage.show();
+    }
+
+    private void showJoinWindow() {
+        BorderPane joinRoot = new BorderPane();
+        //startRoot.setPadding(new Insets(10, 10, 10, 10));
+
+        TextField lobbyNameField = new TextField();
+        lobbyNameField.setMaxWidth(300); // Set preferred width for the input field
+
+        // Create the arrow button
+        Button backButton = new Button("←");
+        backButton.setMinWidth(150);
+        backButton.setFont(Font.font(20));
+        backButton.setAlignment(Pos.TOP_LEFT);
+        backButton.setOnAction(e -> {
+            showGameScene();
+        });
+
+        // Apply CSS styles to center the arrow inside the button
+        backButton.setStyle("-fx-alignment: center; -fx-content-display: center;");
+        backButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY)));
+        joinRoot.setTop(backButton);
+
+        VBox centerContainer = new VBox(20);
+        centerContainer.setAlignment(Pos.CENTER);
+
+        Button joinButton = new Button("Join");
+        joinButton.setMinWidth(400);
+        joinButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY)));
+        joinButton.setTextFill(Color.WHITE);
+        joinButton.setFont(Font.font(20));
+        joinButton.setOnAction(e -> {
+            String lobbyName = lobbyNameField.getText();
+            String command = ("join " + lobbyName + " " + username);
+            gameClient.sendMessageToServer(command);
+            //joinButton.setVisible(false);
+            playerIndex = 1;
+            showGameBoardScene();
+        });
+
+        centerContainer.getChildren().addAll(lobbyNameField, joinButton);
+        joinRoot.setCenter(centerContainer);
+
+        joinRoot.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        Label joinGameLabel = new Label("Insert game lobby:");
+        joinGameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 30));
+        joinGameLabel.setTextFill(Color.BLACK);
+        joinGameLabel.setAlignment(Pos.CENTER);
+        joinGameLabel.setPadding(new Insets(0, 0, 0, 0));
+
+        StackPane joinGamePane = new StackPane(joinGameLabel);
+        joinGamePane.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        BorderPane.setAlignment(joinGamePane, Pos.TOP_CENTER);
+        BorderPane.setMargin(joinGamePane, new Insets(200, 0, 0, 0));
+        joinRoot.setTop(joinGamePane);
+
+        Scene gameScene = new Scene(joinRoot, 1000, 600);
         stage.setScene(gameScene);
         stage.show();
     }
@@ -191,10 +259,14 @@ public class GameClientUI extends Application {
         createGameButton.setOnAction(e -> {
             String timeLimit = timeLimitField.getText();
             String rounds = roundsField.getText();
+            String lobbyName = lobbyNameField.getText();
             // Process the input and create the game
             //createGame(timeLimit, rounds);
             hostStage.close();
-            showStartScene();
+            String command = ("create " + lobbyName + " " + username);
+            gameClient.sendMessageToServer(command);
+            playerIndex = 0;
+            showStartScene(lobbyName);
         });
 
         inputGrid.add(lobbyNameField, 0, 0);
@@ -215,7 +287,7 @@ public class GameClientUI extends Application {
         hostStage.showAndWait();
     }
 
-    public void showStartScene() {
+    public void showStartScene(String lobbyName) {
         BorderPane startRoot = new BorderPane();
         //startRoot.setPadding(new Insets(10, 10, 10, 10));
 
@@ -245,7 +317,7 @@ public class GameClientUI extends Application {
             showGameBoardScene();
         });
 
-        Label gameLobbyLabel = new Label("Game lobby:                                                      ");
+        Label gameLobbyLabel = new Label("Game lobby: " + lobbyName + "                                                       ");
         gameLobbyLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
         gameLobbyLabel.setTextFill(Color.BLACK);
         gameLobbyLabel.setPadding(new Insets(10, 0, 0, 0)); // Adjust the padding for positioning
@@ -278,19 +350,29 @@ public class GameClientUI extends Application {
         gameBoardGrid.setHgap(5);
         gameBoardGrid.setVgap(5);
 
+        gameBoardCells = new Label[rows][columns];
         // Add cells to the game board
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < columns; col++) {
                 // Create a label to represent a game board cell
                 Label cellLabel = new Label();
+                gameBoardCells[row][col] = cellLabel;
                 cellLabel.setPrefSize(40, 40);
                 cellLabel.setStyle("-fx-border-color: black;");
+                int finalRow = row;
+                int finalCol = col;
                 cellLabel.setOnMouseClicked(e -> {
-                    // Fill the entire cell with an "X"
-                    cellLabel.setTextFill(Color.BLACK);
-                    cellLabel.setFont(Font.font("Arial", FontWeight.BOLD, 33));
-                    cellLabel.setText("X");
+                    // Check if it's the player's turn and the cell is not already filled
+                    if (playerTurn && cellLabel.getText().isEmpty()) {
+                        String symbol = (playerIndex == 0) ? "X" : "O";
+                        cellLabel.setText(symbol);
+                        cellLabel.setTextFill(Color.BLACK);
+                        cellLabel.setFont(Font.font("Arial", FontWeight.BOLD, 33));
+                        playerTurn = false;
+                        gameBoardCells[finalRow][finalCol] = cellLabel; // Update the game board state
+                    }
                     cellLabel.setAlignment(Pos.CENTER);
+                    gameClient.sendMessageToServer("move " + finalRow + " " + finalCol);
                 });
 
                 // Add the cell label to the grid
@@ -299,6 +381,11 @@ public class GameClientUI extends Application {
         }
 
         gameBoardRoot.setCenter(gameBoardGrid);
+
+        chatArea = new TextArea();
+        chatArea.setEditable(false);
+        gameBoardRoot.setBottom(chatArea);
+        chatArea.setMaxHeight(50);
 
         Scene gameScene = new Scene(gameBoardRoot, 1000, 600);
         stage.setScene(gameScene);
@@ -318,5 +405,61 @@ public class GameClientUI extends Application {
         stage = primaryStage;
         stage.setTitle("Gomoku");
         showLoginScene();
+    }
+
+    public void drawOpponentMove(String response) {
+        if(!response.contains(username)) {
+            // Find the opening and closing parentheses
+            int openingParenthesisIndex = response.indexOf("(");
+            int closingParenthesisIndex = response.indexOf(")");
+
+            // Extract the substring between the parentheses
+            String numbersSubstring = response.substring(openingParenthesisIndex + 1, closingParenthesisIndex);
+
+            // Split the substring using comma as the delimiter
+            String[] numbers = numbersSubstring.split(",");
+
+            // Remove any whitespace from the numbers
+            String number1 = numbers[0].trim();
+            String number2 = numbers[1].trim();
+
+            // Convert the extracted numbers from string to integers if needed
+            int x = Integer.parseInt(number1);
+            int y = Integer.parseInt(number2);
+
+            Platform.runLater(() -> {
+                Label cellLabel = gameBoardCells[x][y];
+                cellLabel.setTextFill(Color.BLACK);
+                cellLabel.setFont(Font.font("Arial", FontWeight.BOLD, 33));
+                cellLabel.setAlignment(Pos.CENTER);
+                if(playerIndex == 0) {
+                    cellLabel.setText("O");
+                }
+                else {
+                    cellLabel.setText("X");
+                }
+            });
+        }
+    }
+
+    public void showWinnerPage() {
+        Platform.runLater(() -> {
+            BorderPane winnerRoot = new BorderPane();
+            winnerRoot.setPadding(new Insets(10, 10, 10, 10));
+
+            Label winnerLabel = new Label("Winner: " + username);
+            winnerLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+            winnerRoot.setCenter(winnerLabel);
+
+            Button returnButton = new Button("Return to Main Menu");
+            returnButton.setOnAction(e -> showGameScene());
+            winnerRoot.setBottom(returnButton);
+            BorderPane.setAlignment(returnButton, Pos.CENTER);
+
+            Scene winnerScene = new Scene(winnerRoot, 1000, 600);
+//            Stage stage = (Stage) gameScenePane.getScene().getWindow();
+            stage.setScene(winnerScene);
+            stage.show();
+        });
     }
 }

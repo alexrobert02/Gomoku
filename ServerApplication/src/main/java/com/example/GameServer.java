@@ -53,8 +53,8 @@ public class GameServer {
                 System.err.println("Error starting server on port " + port + ": " + e.getMessage());
             }
         } finally {
-            stop();
-            System.out.println("Server has been closed.");
+            //stop();
+            //System.out.println("Server has been closed.");
         }
     }
 
@@ -143,6 +143,7 @@ public class GameServer {
                             Player currentPlayer = game.getCurrentPlayer();
                             System.out.println("Game started! It's " + currentPlayer.getName() + "'s turn.");
                             broadcastMessage("Game started! It's " + currentPlayer.getName() + "'s turn.");
+                            currentPlayer.notifyTurn();
                         }
                     } else {
                         clientThread.sendResponse("NAME_TAKEN");
@@ -169,8 +170,8 @@ public class GameServer {
                         GameHistory gameDb=findGameByLobbyNameInDb(game.getLobbyName());
                         restTemplate.put("http://localhost:8000/api/game-history/{id}/status?status={status}", null,gameDb.getId(),"stopped");
                         exportDataToCSV();
-                        clientThread.sendResponse("EXIT");
-                        stop();
+                        //clientThread.sendResponse("EXIT");
+                        //stop();
                     }
                 } else {
                     // it's not the current player's turn, send an error message
@@ -189,14 +190,14 @@ public class GameServer {
                 System.out.println("Player " + player.getName() + " has left the game");
                 broadcastMessage("Player " + player.getName() + " has left the game");
             }
-            clientThread.sendResponse("EXIT");
-            clientThread.close();
-            clientThreads.remove(clientThread);
+            //clientThread.sendResponse("EXIT");
+            //clientThread.close();
+            //clientThreads.remove(clientThread);
 
             // Check if all clients have received the exit command
-            if (clientThreads.isEmpty()) {
-                stop(); // Close the server if all clients have exited
-            }
+//            if (clientThreads.isEmpty()) {
+//                stop(); // Close the server if all clients have exited
+//            }
         }
     }
 
@@ -284,7 +285,7 @@ public class GameServer {
     private void triggerToInsertPlayerToDatabase(DataBasePlayer player) {
         String url = "jdbc:postgresql://localhost:5432/Gomoku";
         String username = "postgres";
-        String password = "AnaMaria";
+        String password = "password";
 
         try {
             // Establish a connection to the PostgreSQL database

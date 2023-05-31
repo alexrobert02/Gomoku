@@ -18,6 +18,7 @@ public class GameClient extends Application {
     private boolean gameIsOver = false;
     private GameClientUI ui;
     private String username;
+    private String command;
 
     public GameClient() {
         this.host = "localhost";
@@ -61,11 +62,20 @@ public class GameClient extends Application {
                     String response;
                     while ((response = in.readLine()) != null) {
                         ui.appendMessage(response);
-                        if (response.equals("WIN") || response.equals("LOSS") || response.equals("TIME_UP")) {
-                            gameIsOver = true;
-                            ui.appendMessage("Type anything to exit");
-                            break;
+                        if (response.equals ("TURN")) {
+                            ui.notifyTurn();
                         }
+                        if (response.contains("made a move at")) {
+                            ui.drawOpponentMove(response);
+                        }
+                        if (response.equals ("WIN") || response.equals("LOSS")) {
+                            ui.showWinnerPage();
+                        }
+//                        if (response.equals("WIN") || response.equals("LOSS") || response.equals("TIME_UP")) {
+//                            gameIsOver = true;
+//                            ui.appendMessage("Type anything to exit");
+//                            break;
+//                        }
                     }
                 } catch (IOException e) {
                     ui.appendMessage("Error reading server response: " + e.getMessage());
@@ -94,5 +104,13 @@ public class GameClient extends Application {
             out.println(message);
             ui.clearInputField();
         }
+    }
+
+    public void sendMessageToServer(String message) {
+        out.println(message);
+    }
+
+    public void setCommand(String command) {
+        this.command = command;
     }
 }
