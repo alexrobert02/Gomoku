@@ -68,8 +68,8 @@ public class GameClient extends Application {
                         if (response.contains("made a move at")) {
                             ui.drawOpponentMove(response);
                         }
-                        if (response.equals ("WIN") || response.equals("LOSS")) {
-                            ui.showWinnerPage();
+                        if (response.contains ("WINNER")) {
+                            ui.showWinnerPage(response);
                         }
 //                        if (response.equals("WIN") || response.equals("LOSS") || response.equals("TIME_UP")) {
 //                            gameIsOver = true;

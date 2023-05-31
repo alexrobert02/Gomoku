@@ -54,8 +54,8 @@ class Player {
         output.println("TURN");
     }
 
-    public void notifyWin() {
-        output.println("WIN");
+    public void notifyWin(String name) {
+        output.println("WINNER: " + name);
     }
 
     public void notifyLoss() {

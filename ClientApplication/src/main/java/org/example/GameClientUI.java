@@ -13,7 +13,6 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -442,12 +441,12 @@ public class GameClientUI extends Application {
         }
     }
 
-    public void showWinnerPage() {
+    public void showWinnerPage(String response) {
         Platform.runLater(() -> {
             BorderPane winnerRoot = new BorderPane();
             winnerRoot.setPadding(new Insets(10, 10, 10, 10));
 
-            Label winnerLabel = new Label("Winner: " + username);
+            Label winnerLabel = new Label(response);
             winnerLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
             winnerRoot.setCenter(winnerLabel);
 

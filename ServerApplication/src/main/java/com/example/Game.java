@@ -70,8 +70,8 @@ class Game {
 
             // Check if the move resulted in a win
             if (board.isWinningMove(row, col)) {
-                players[currentPlayerIndex].notifyWin();
-                players[1 - currentPlayerIndex].notifyLoss();
+                players[currentPlayerIndex].notifyWin(players[currentPlayerIndex].getName());
+                players[1 - currentPlayerIndex].notifyWin(players[currentPlayerIndex].getName());
                 gameOver = true;
             }
             // Check if the board is full and the game has ended in a draw
@@ -89,7 +89,7 @@ class Game {
                 currentPlayerTimeRemaining = players[currentPlayerIndex].getTimeRemaining() - (int) (elapsedTime / 1000);
                 if (currentPlayerTimeRemaining <= 0) {
                     players[currentPlayerIndex].notifyTimeout();
-                    players[1 - currentPlayerIndex].notifyWin();
+                    players[1 - currentPlayerIndex].notifyWin(players[1 - currentPlayerIndex].getName());
                     gameOver = true;
                 } else {
                     players[currentPlayerIndex].notifyTurn();
@@ -135,7 +135,7 @@ class Game {
                 // Check if the current player's time has run out
                 if (currentPlayerTimeRemaining <= 0) {
                     players[currentPlayerIndex].notifyTimeout();
-                    players[1 - currentPlayerIndex].notifyWin();
+                    players[1 - currentPlayerIndex].notifyWin(players[1 - currentPlayerIndex].getName());
                     gameOver = true;
                 }
             }
