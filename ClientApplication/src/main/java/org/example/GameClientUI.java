@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 
 public class GameClientUI extends Application {
     private Stage stage;
+    private BorderPane root;
     private TextArea chatArea;
     private TextField inputField;
     private Button sendButton;
@@ -119,7 +120,7 @@ public class GameClientUI extends Application {
     }
 
     public void showGameScene() {
-        BorderPane root = new BorderPane();
+        root = new BorderPane();
         root.setPadding(new Insets(10, 10, 10, 10));
 
         chatArea = new TextArea();
@@ -451,7 +452,9 @@ public class GameClientUI extends Application {
             winnerRoot.setCenter(winnerLabel);
 
             Button returnButton = new Button("Return to Main Menu");
-            returnButton.setOnAction(e -> showGameScene());
+            returnButton.setOnAction(e -> {
+                showGameScene();
+            });
             winnerRoot.setBottom(returnButton);
             BorderPane.setAlignment(returnButton, Pos.CENTER);
 
