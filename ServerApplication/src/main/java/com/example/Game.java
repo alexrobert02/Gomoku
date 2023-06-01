@@ -18,6 +18,7 @@ class Game {
     private Timer turnTimer;
     private int currentPlayerTimeRemaining;
     private long turnStartTime;
+    private Player winner;
 
     public Game(GameHistory gameDb) {
         board = new Board();
@@ -73,6 +74,7 @@ class Game {
                 players[currentPlayerIndex].notifyWin(players[currentPlayerIndex].getName());
                 players[1 - currentPlayerIndex].notifyWin(players[currentPlayerIndex].getName());
                 gameOver = true;
+                winner=players[currentPlayerIndex];
             }
             // Check if the board is full and the game has ended in a draw
             else if (board.isFull()) {
@@ -205,5 +207,9 @@ class Game {
 
     public long getTurnStartTime() {
         return turnStartTime;
+    }
+    public Player getWinner()
+    {
+        return winner;
     }
 }

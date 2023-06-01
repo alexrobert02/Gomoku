@@ -19,10 +19,12 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class GameServer {
     private int port;
+    private String type;
     private RestTemplate restTemplate = new RestTemplate();
     private ServerSocket serverSocket;
     private boolean running;
     private Map<String, Game> games;
+    private Map<String, Tournament> tournements;
     private List<ClientThread> clientThreads;
 
     public GameServer() {
@@ -30,6 +32,7 @@ public class GameServer {
         this.running = true;
         this.games = new HashMap<>();
         this.clientThreads = new ArrayList<>();
+        this.tournements= new HashMap<>();
     }
 
     public void start() {
@@ -62,6 +65,7 @@ public class GameServer {
         // Parse the command received from the client
         String[] parts = command.split(" ");
         String action = parts[0];
+
 
         if (action.equalsIgnoreCase("create")) {
             if (clientThread.getGame() == null) {
@@ -170,6 +174,8 @@ public class GameServer {
                         GameHistory gameDb=findGameByLobbyNameInDb(game.getLobbyName());
                         restTemplate.put("http://localhost:8000/api/game-history/{id}/status?status={status}", null,gameDb.getId(),"stopped");
                         exportDataToCSV();
+                        clientThread.setGame(null);
+                        games.remove(game);
                         //clientThread.sendResponse("EXIT");
                         //stop();
                     }
