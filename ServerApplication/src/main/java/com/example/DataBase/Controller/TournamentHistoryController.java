@@ -31,12 +31,11 @@ public class TournamentHistoryController {
                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
 
         // Verifică dacă numărul de ID-uri noi se potrivește cu numărul de jucători din turneu
-        if (playerIds.size() != 8) {
+        if (playerIds.size() != 7) {
             throw new IllegalArgumentException("The number of player IDs does not match the expected number of players");
         }
 
         // Actualizează ID-urile jucătorilor
-        tournament.setPlayer1Id(playerIds.get(0));
         tournament.setPlayer2Id(playerIds.get(1));
         tournament.setPlayer3Id(playerIds.get(2));
         tournament.setPlayer4Id(playerIds.get(3));

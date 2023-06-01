@@ -54,7 +54,7 @@ public class GameClient extends Application {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
             ui.appendMessage("Connected to server at " + host + ":" + port);
-            ui.appendMessage("Available commands: create, join, move, exit");
+            ui.appendMessage("Available commands: create, join, move, exit, create_tournament, join_tournament");
 
             // Start a separate thread to listen for server responses
             Thread responseThread = new Thread(() -> {

@@ -134,4 +134,27 @@ public class TournamentHistory {
         this.status = status;
     }
 
+    public void setPlayer3Id(Long player3Id) {
+        this.player3Id = player3Id;
+    }
+
+    public void setPlayer4Id(Long player4Id) {
+        this.player4Id = player4Id;
+    }
+
+    public void setPlayer5Id(Long player5Id) {
+        this.player5Id = player5Id;
+    }
+
+    public void setPlayer6Id(Long player6Id) {
+        this.player6Id = player6Id;
+    }
+
+    public void setPlayer7Id(Long player7Id) {
+        this.player7Id = player7Id;
+    }
+
+    public void setPlayer8Id(Long player8Id) {
+        this.player8Id = player8Id;
+    }
 }
