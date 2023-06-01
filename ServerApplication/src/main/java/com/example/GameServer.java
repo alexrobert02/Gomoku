@@ -103,7 +103,7 @@ public class GameServer {
                         // Send confirmation message to the client
                         clientThread.sendResponse("GAME_CREATED");
                         System.out.println("Player " + player.getName() + " joined the game: " + player.getSymbol());
-                        broadcastMessage("Player " + player.getName() + " joined the game: " + player.getSymbol());
+                        broadcastMessage(game, "Player " + player.getName() + " joined the game: " + player.getSymbol());
                     }
                 }
                 else {
@@ -199,14 +199,14 @@ public class GameServer {
                         clientThread.sendResponse("GAME_JOINED");
                         // Send confirmation message to the client
                         System.out.println("Player " + player.getName() + " joined the game: " + player.getSymbol());
-                        broadcastMessage("Player " + player.getName() + " joined the game: " + player.getSymbol());
+                        broadcastMessage(game, "Player " + player.getName() + " joined the game: " + player.getSymbol());
 
                         if (game.isFull()) {
                             // Start the game once both players have joined
                             game.start();
                             Player currentPlayer = game.getCurrentPlayer();
                             System.out.println("Game started! It's " + currentPlayer.getName() + "'s turn.");
-                            broadcastMessage("Game started! It's " + currentPlayer.getName() + "'s turn.");
+                            broadcastMessage(game, "Game started! It's " + currentPlayer.getName() + "'s turn.");
                             currentPlayer.notifyTurn();
                         }
                     } else {
@@ -228,7 +228,7 @@ public class GameServer {
                     int row = Integer.parseInt(parts[1]);
                     int col = Integer.parseInt(parts[2]);
                     System.out.println("Player " + player.getName() + " made a move at (" + row + ", " + col + ")");
-                    broadcastMessage("Player " + player.getName() + " made a move at (" + row + ", " + col + ")");
+                    broadcastMessage(game, "Player " + player.getName() + " made a move at (" + row + ", " + col + ")");
                     game.makeMove(player, row, col);
                     if (game.isGameOver()) {
                         GameHistory gameDb=findGameByLobbyNameInDb(game.getLobbyName());
@@ -254,7 +254,7 @@ public class GameServer {
             if (player != null) {
                 game.removePlayer(player);
                 System.out.println("Player " + player.getName() + " has left the game");
-                broadcastMessage("Player " + player.getName() + " has left the game");
+                broadcastMessage(game, "Player " + player.getName() + " has left the game");
             }
             //clientThread.sendResponse("EXIT");
             //clientThread.close();
@@ -269,9 +269,11 @@ public class GameServer {
 
 
     // Helper method to broadcast a message to all connected clients
-    private void broadcastMessage(String message) {
+    private void broadcastMessage(Game game, String message) {
         for (ClientThread clientThread : clientThreads) {
-            clientThread.sendResponse(message);
+            if (clientThread.getGame() == game) {
+                clientThread.sendResponse(message);
+            }
             try {
                 Thread.sleep(10); // Introduce a small delay
             } catch (InterruptedException e) {
@@ -445,16 +447,16 @@ public class GameServer {
                     game.setLobbyName(randomName);
                     game.join(player1);
                     System.out.println("Player " + player1.getName() + " joined the game: " + player1.getSymbol());
-                    broadcastMessage("Player " + player2.getName() + " joined the game: " + player2.getSymbol());
+                    broadcastMessage(game, "Player " + player2.getName() + " joined the game: " + player2.getSymbol());
                     game.join(player2);
                     System.out.println("Player " + player1.getName() + " joined the game: " + player1.getSymbol());
-                    broadcastMessage("Player " + player2.getName() + " joined the game: " + player2.getSymbol());
+                    broadcastMessage(game, "Player " + player2.getName() + " joined the game: " + player2.getSymbol());
                     // Adăugam jocul la lista de jocuri din turneu
                     tournament.getTournamentGames().add(game);
                     game.start();
                     Player currentPlayer = game.getCurrentPlayer();
                     System.out.println("Game started! It's " + currentPlayer.getName() + "'s turn.");
-                    broadcastMessage("Game started! It's " + currentPlayer.getName() + "'s turn.");
+                    broadcastMessage(game, "Game started! It's " + currentPlayer.getName() + "'s turn.");
                     currentPlayer.notifyTurn();
                 }
 
@@ -463,6 +465,14 @@ public class GameServer {
 
         // Începeți toate jocurile în același timp
 
+    }
+
+    public void setGameToNullToAllClientThreads(Game game) {
+        for (ClientThread clientThread : clientThreads) {
+            if (clientThread.getGame() == game) {
+                clientThread.setGame(null);
+            }
+        }
     }
 
 }
