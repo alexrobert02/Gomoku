@@ -395,7 +395,7 @@ public class GameClientUI extends Application {
 
     public void startGame() {
         if (loggedIn) {
-            showGameScene();
+            showGameSceneTest();
             gameClient.connectToServer();
         }
     }

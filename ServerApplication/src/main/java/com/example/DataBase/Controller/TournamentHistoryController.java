@@ -26,7 +26,7 @@ public class TournamentHistoryController {
         return tournamentHistoryRepository.save(tournamentHistory); // Add a new tournament history entry
     }
     @PutMapping("/{id}/update-players")
-    public TournamentHistory updatePlayerIds(@PathVariable Long id, @RequestParam List<Long> playerIds) {
+    public TournamentHistory updatePlayerIds(@PathVariable Long id, @RequestBody List<Long> playerIds) {
         TournamentHistory tournament = tournamentHistoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
 
