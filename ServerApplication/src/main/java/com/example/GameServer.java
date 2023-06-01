@@ -5,34 +5,36 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.sql.Connection;
 
 import com.example.DataBase.DataBasePlayer;
 import com.example.DataBase.GameHistory;
+import com.example.DataBase.TournamentHistory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 @Component
 public class GameServer {
     private int port;
-    private String type;
     private RestTemplate restTemplate = new RestTemplate();
     private ServerSocket serverSocket;
     private boolean running;
     private Map<String, Game> games;
+    private Map<String, Tournament> tournaments;
+    private boolean tournamentInProgress;
     private Map<String, Tournament> tournements;
+    private String type;
     private List<ClientThread> clientThreads;
 
     public GameServer() {
         this.port = 8095;
         this.running = true;
         this.games = new HashMap<>();
+        this.tournements=new HashMap<>();
         this.clientThreads = new ArrayList<>();
         this.tournements= new HashMap<>();
+        this.tournamentInProgress=false;
     }
 
     public void start() {
@@ -66,7 +68,6 @@ public class GameServer {
         String[] parts = command.split(" ");
         String action = parts[0];
 
-
         if (action.equalsIgnoreCase("create")) {
             if (clientThread.getGame() == null) {
                 // Set the lobby name
@@ -84,9 +85,9 @@ public class GameServer {
                      * adaugam playerul in baza de date
                      */
                     DataBasePlayer dbPlayer = new DataBasePlayer(player.getName());
-                   // DataBasePlayer addedPlayer = restTemplate.postForObject("http://localhost:8000/api/players", dbPlayer, DataBasePlayer.class);
-                   // System.out.println("Added Player: " + addedPlayer.getName()+addedPlayer.getId());
-                    triggerToInsertPlayerToDatabase(dbPlayer);
+                    DataBasePlayer addedPlayer = restTemplate.postForObject("http://localhost:8000/api/players", dbPlayer, DataBasePlayer.class);
+                    System.out.println("Added Player: " + addedPlayer.getName()+addedPlayer.getId());
+                    //triggerToInsertPlayerToDatabase(dbPlayer);
                     /**
                      * adaugam jocul creat in baza de date
                      */
@@ -111,7 +112,66 @@ public class GameServer {
             } else {
                 clientThread.sendResponse("GAME_UNAVAILABLE");
             }
-        } else if (action.equalsIgnoreCase("join")) {
+        }
+       else if (action.equalsIgnoreCase("create_tournament")) {
+            if (clientThread.getGame() == null) {
+                // Set the lobby name
+                String lobbyName = parts[1];
+                if (tournamentInProgress) {
+                    System.out.println("Server is busy with another tournement!");
+                    return; // Încheiem executarea metodei, deoarece nu putem crea un nou turneu
+                }
+                tournamentInProgress=true;
+                // adaugam turneul in baza de date
+                TournamentHistory tournamentDb = new TournamentHistory(lobbyName, null, LocalDateTime.now(), null, "running");
+                // creem turneul
+                Tournament tournament = new Tournament(tournamentDb);
+                tournament.setLobbyName(lobbyName);
+                // Adăugați turneul în lista de turnee a serverului
+                tournements.put(lobbyName,tournament);
+                // adaugam playerii la lista de jucatori a turneului
+                Player player = new Player(parts[2], 'X', clientThread.getClientSocket());
+                tournament.getTournamentPlayers().add(player);
+                // adaugam playerii in baza de date
+                DataBasePlayer dbPlayer = new DataBasePlayer(player.getName());
+                DataBasePlayer addedPlayer = restTemplate.postForObject("http://localhost:8000/api/players", dbPlayer, DataBasePlayer.class);
+                System.out.println("Added Player: " + addedPlayer.getName()+addedPlayer.getId());
+
+
+            }
+            else {
+                clientThread.sendResponse("TOURNAMENT_UNAVAILABLE");
+            }
+        }
+       else if (action.equalsIgnoreCase("join_tournament")) {
+            if (clientThread.getGame() == null) {
+                String lobbyName = parts[1];
+                // Find the tournament in database
+                TournamentHistory tournamentDb = findTournamentByLobbyNameInDb(lobbyName);
+                Tournament tournament = findTournamentByLobbyName(lobbyName);
+                if (tournamentDb != null && tournament.getTournamentPlayers().size() < 8) {
+                    // Create a new player and add them to the game
+                    Player player = new Player(parts[2], 'O', clientThread.getClientSocket());
+                    DataBasePlayer dbPlayer = new DataBasePlayer(player.getName());
+                    DataBasePlayer addedPlayer = restTemplate.postForObject("http://localhost:8000/api/players", dbPlayer, DataBasePlayer.class);
+                    System.out.println("Added Player: " + addedPlayer.getName());
+
+                    if (tournament.getTournamentPlayers().size()==8) {
+                        // Start the tournament once the players have joined
+                        createTournament(tournament);
+                    }
+                } else {
+                    clientThread.sendResponse("NAME_TAKEN");
+                }
+
+            }
+            else {
+                clientThread.sendResponse("TOURNAMENT_UNAVAILABLE");
+            }
+
+        }
+
+        else if (action.equalsIgnoreCase("join")) {
             if (clientThread.getGame() == null) {
                 String lobbyName = parts[1];
                 // Find the game with the specified lobby name
@@ -233,6 +293,16 @@ public class GameServer {
         }
         return null; // Game not found
     }
+    private TournamentHistory findTournamentByLobbyNameInDb(String lobbyName) {
+        TournamentHistory[] tournamentHistories = restTemplate.getForObject("http://localhost:8000/api/tournament-history", TournamentHistory[].class);
+        for (TournamentHistory history : tournamentHistories) {
+            if(history.getName().equals(lobbyName))
+            {
+                return history;
+            }
+        }
+        return null; // Game not found
+    }
     private Game findGameByLobbyName(String lobbyName) {
         for (Game game : games.values()) {
             if (game.getLobbyName().equals(lobbyName)) {
@@ -241,7 +311,14 @@ public class GameServer {
         }
         return null; // Game not found
     }
-
+    private Tournament findTournamentByLobbyName(String lobbyName) {
+        for (Tournament tournament : tournaments.values()) {
+            if (tournament.getLobbyName().equals(lobbyName)) {
+                return tournament;
+            }
+        }
+        return null; // Game not found
+    }
     private DataBasePlayer findPlayerByNameInDb(String Name) {
         DataBasePlayer[] dataBasePlayers = restTemplate.getForObject("http://localhost:8000/api/players", DataBasePlayer[].class);
         for (DataBasePlayer player : dataBasePlayers) {
@@ -315,6 +392,77 @@ public class GameServer {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public synchronized void createTournament(Tournament tournament) {
+        // Verificam daca s-au conectat toti playerii
+        if(tournament.getTournamentPlayers().size()==8)
+        {
+            //identificam id-urile jucatorilor
+            long id1=0,id2=0,id3=0,id4=0,id5=0,id6=0,id7=0,id8=0;
+            for(int i=0;i<tournament.getTournamentPlayers().size();i++)
+            {
+                long id=findPlayerByNameInDb(tournament.getTournamentPlayers().get(i).getName()).getId();
+                switch (i){
+                    case 0: id1=id;
+                    case 1: id2=id;
+                    case 2: id3=id;
+                    case 3: id4=id;
+                    case 4: id5=id;
+                    case 5: id6=id;
+                    case 6: id7=id;
+                    case 7: id8=id;
+                }
+            }
+            List<Long> playerIds = Arrays.asList(id1, id2, id3, id4, id5, id6, id7, id8);
+            long tournementId=tournament.getTournamentDb().getId();
+            // adaugam id-ul jucatorilor in baza de date a turneului
+            restTemplate.put("http://localhost:8000/api/tournament-history/{id}/update-players", null, tournementId,playerIds);
+            // Generam perechi aleatorii de jucători
+            while (!tournament.getTournamentPlayers().isEmpty()) {
+                int index1 = (int) (Math.random() * tournament.getTournamentPlayers().size());
+                Player player1 = tournament.getTournamentPlayers().remove(index1);
+
+                int index2 = (int) (Math.random() * tournament.getTournamentPlayers().size());
+                Player player2 = tournament.getTournamentPlayers().remove(index2);
+
+                // Creem jocul pentru perechea de jucători si il adaugam in baza de date
+                String[] words = {"apple", "banana", "orange", "kiwi", "grape"};
+                Random random = new Random();
+                String randomName = words[random.nextInt(words.length)] + random.nextInt(100);
+                GameHistory gameDb= findGameByLobbyNameInDb(randomName);
+                if(gameDb ==null || gameDb.getStatus().equals("stopped")) {
+                    Game game = new Game(gameDb);
+                    //Adaugam jocul in baza de date
+                    DataBasePlayer dbPlayerForId=findPlayerByNameInDb(player1.getName());
+                    GameHistory dbGame = new GameHistory(randomName, dbPlayerForId.getId(),null, LocalDateTime.now(),null,"running");
+                    GameHistory addedGame = restTemplate.postForObject("http://localhost:8000/api/game-history", dbGame, GameHistory.class);
+                    restTemplate.put("http://localhost:8000/api/game-history/{id}?playerId={playerId}", null, addedGame.getId(), findPlayerByNameInDb(player2.getName()).getId());
+                    System.out.println("Added Game: " + addedGame.getId());
+                    // repartizam cate un simbol playerilor
+                    player1.setSymbol('X');
+                    player2.setSymbol('O');
+                    // bagam playerii in joc
+                    game.setLobbyName(randomName);
+                    game.join(player1);
+                    System.out.println("Player " + player1.getName() + " joined the game: " + player1.getSymbol());
+                    broadcastMessage("Player " + player2.getName() + " joined the game: " + player2.getSymbol());
+                    game.join(player2);
+                    System.out.println("Player " + player1.getName() + " joined the game: " + player1.getSymbol());
+                    broadcastMessage("Player " + player2.getName() + " joined the game: " + player2.getSymbol());
+                    // Adăugam jocul la lista de jocuri din turneu
+                    tournament.getTournamentGames().add(game);
+                    game.start();
+                    Player currentPlayer = game.getCurrentPlayer();
+                    System.out.println("Game started! It's " + currentPlayer.getName() + "'s turn.");
+                    broadcastMessage("Game started! It's " + currentPlayer.getName() + "'s turn.");
+                    currentPlayer.notifyTurn();
+                }
+
+            }
+        }
+
+        // Începeți toate jocurile în același timp
+
     }
 
 }

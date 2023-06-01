@@ -79,4 +79,31 @@ class Player {
         }
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setSymbol(char symbol) {
+        this.symbol = symbol;
+    }
+
+    public void setInput(BufferedReader input) {
+        this.input = input;
+    }
+
+    public void setOutput(PrintWriter output) {
+        this.output = output;
+    }
+
+    public void setSocket(Socket socket) {
+        this.socket = socket;
+    }
+
+    public void setTimer(Timer timer) {
+        this.timer = timer;
+    }
+
+    public void setTimeRemaining(int timeRemaining) {
+        this.timeRemaining = timeRemaining;
+    }
 }

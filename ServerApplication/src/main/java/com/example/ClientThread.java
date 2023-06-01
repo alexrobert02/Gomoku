@@ -12,6 +12,7 @@ public class ClientThread extends Thread {
     private PrintWriter out;
     private GameServer server;
     private Game game;
+    private Tournament tournament;
     private Player clientPlayer;
 
     public ClientThread(Socket clientSocket, GameServer server) {
@@ -71,6 +72,10 @@ public class ClientThread extends Thread {
 
     public void setGame(Game game) {
         this.game = game;
+    }
+
+    public Tournament getTournament() {
+        return tournament;
     }
 
     public Player getClientPlayer() {

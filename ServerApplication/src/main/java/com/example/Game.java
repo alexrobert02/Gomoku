@@ -16,11 +16,13 @@ class Game {
     private boolean gameStarted;
     private int timeLimitSeconds;
     private Timer turnTimer;
+    private GameHistory gameDb;
     private int currentPlayerTimeRemaining;
     private long turnStartTime;
     private Player winner;
 
     public Game(GameHistory gameDb) {
+        this.gameDb=gameDb;
         board = new Board();
         players = new Player[2];
         currentPlayerIndex = 0;
