@@ -181,6 +181,12 @@ public class GameClientUI extends Application {
         VBox centerContainer = new VBox(20);
         centerContainer.setAlignment(Pos.CENTER);
 
+        Label joinGameLabel = new Label("Insert game lobby:");
+        joinGameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 30));
+        joinGameLabel.setTextFill(Color.BLACK);
+        joinGameLabel.setAlignment(Pos.CENTER);
+        joinGameLabel.setPadding(new Insets(0, 0, 0, 0));
+
         Button joinButton = new Button("Join");
         joinButton.setMinWidth(400);
         joinButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -192,19 +198,14 @@ public class GameClientUI extends Application {
             gameClient.sendMessageToServer(command);
             //joinButton.setVisible(false);
             playerIndex = 1;
-            showGameBoardScene();
+            joinButton.setVisible(false);
+            joinGameLabel.setVisible(false);
         });
 
         centerContainer.getChildren().addAll(lobbyNameField, joinButton);
         joinRoot.setCenter(centerContainer);
 
         joinRoot.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
-
-        Label joinGameLabel = new Label("Insert game lobby:");
-        joinGameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 30));
-        joinGameLabel.setTextFill(Color.BLACK);
-        joinGameLabel.setAlignment(Pos.CENTER);
-        joinGameLabel.setPadding(new Insets(0, 0, 0, 0));
 
         StackPane joinGamePane = new StackPane(joinGameLabel);
         joinGamePane.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -314,7 +315,7 @@ public class GameClientUI extends Application {
         startButton.setTextFill(Color.WHITE);
         startButton.setFont(Font.font(20));
         startButton.setOnAction(e -> {
-            showGameBoardScene();
+            gameClient.sendMessageToServer("START");
         });
 
         Label gameLobbyLabel = new Label("Game lobby: " + lobbyName + "                                                       ");
@@ -388,14 +389,18 @@ public class GameClientUI extends Application {
         chatArea.setMaxHeight(50);
 
         Scene gameScene = new Scene(gameBoardRoot, 1000, 600);
-        stage.setScene(gameScene);
-        stage.show();
+
+        // Wrap the UI update code inside Platform.runLater()
+        Platform.runLater(() -> {
+            stage.setScene(gameScene);
+            stage.show();
+        });
     }
 
 
     public void startGame() {
         if (loggedIn) {
-            showGameSceneTest();
+            showGameScene();
             gameClient.connectToServer();
         }
     }

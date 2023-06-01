@@ -71,6 +71,9 @@ public class GameClient extends Application {
                         if (response.contains ("WINNER")) {
                             ui.showWinnerPage(response);
                         }
+                        if (response.contains ("Game started!")) {
+                            ui.showGameBoardScene();
+                        }
 //                        if (response.equals("WIN") || response.equals("LOSS") || response.equals("TIME_UP")) {
 //                            gameIsOver = true;
 //                            ui.appendMessage("Type anything to exit");
