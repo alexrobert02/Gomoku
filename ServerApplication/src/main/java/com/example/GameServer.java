@@ -264,6 +264,12 @@ public class GameServer {
                                         newRound(findTournament);
                                     }
                                 }
+                                // verificam daca s-a terminat turneul
+                                if(findTournament.getTournamentGames().size()==1)
+                                {
+                                    tournamentInProgress=false;
+                                    findTournament.setFinalGame(game);
+                                }
 
                             }
                         }
