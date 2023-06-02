@@ -251,6 +251,22 @@ public class GameServer {
                         games.remove(game);
                         //clientThread.sendResponse("EXIT");
                         //stop();
+                        // luam castigatorul si il punem in lista de castigatori a turneului
+                        if(tournamentInProgress==true)
+                        {
+                            for(Tournament findTournament:tournaments.values())
+                            {
+                                if(findTournament.isTournamentOver()==false)
+                                {
+                                    findTournament.getTournamentWinners().add(game.getWinner());
+                                    if(findTournament.getNumberOfPlayerForRound()==findTournament.getTournamentWinners().size())
+                                    {
+                                        newRound(findTournament);
+                                    }
+                                }
+
+                            }
+                        }
                     }
                 } else {
                     // it's not the current player's turn, send an error message
@@ -274,9 +290,9 @@ public class GameServer {
             //clientThreads.remove(clientThread);
 
             // Check if all clients have received the exit command
-//            if (clientThreads.isEmpty()) {
-//                stop(); // Close the server if all clients have exited
-//            }
+            //if (clientThreads.isEmpty()) {
+            // stop(); // Close the server if all clients have exited
+            //}
         }
     }
 
@@ -412,6 +428,8 @@ public class GameServer {
         // Verificam daca s-au conectat toti playerii
         if(tournament.getTournamentPlayers().size()==8)
         {
+            // setam jucatorii pentru urmatoarea runda
+            tournament.setNumberOfPlayerForRound(4);
             //identificam id-urile jucatorilor
             long id1=0,id2=0,id3=0,id4=0,id5=0,id6=0,id7=0,id8=0;
             for(int i=0;i<tournament.getTournamentPlayers().size();i++)
@@ -485,6 +503,64 @@ public class GameServer {
             if (clientThread.getGame() == game) {
                 clientThread.setGame(null);
             }
+        }
+    }
+    public void newRound(Tournament tournament)
+    {
+        if(tournament.getTournamentWinners().size()==tournament.getNumberOfPlayerForRound()) {
+
+            // Obținem câștigătorii din cele patru jocuri inițiale
+            for (Game game : tournament.getTournamentGames()) {
+                Player winner = game.getWinner();
+                if (winner != null) {
+                    tournament.getTournamentWinners().add(winner);
+                }
+                tournament.getTournamentGames().remove(game);
+            }
+
+            // Amestecăm lista de câștigători
+            Collections.shuffle(tournament.getTournamentWinners());
+
+            // Împărțim câștigătorii în perechi și îi adăugăm în jocurile noi
+            for (int i = 0; i < tournament.getTournamentWinners().size(); i += 2) {
+                Player player1 = tournament.getTournamentWinners().get(i);
+                Player player2 = tournament.getTournamentWinners().get(i + 1);
+            // creem jocurile pentru o noua runda si le adaugam in baza de date
+                String[] words = {"apple", "banana", "orange", "kiwi", "grape"};
+                Random random = new Random();
+                String randomName = words[random.nextInt(words.length)] + random.nextInt(100);
+                GameHistory gameDb= findGameByLobbyNameInDb(randomName);
+                if(gameDb ==null || gameDb.getStatus().equals("stopped"))
+                {
+                    Game game = new Game(gameDb);
+                    //Adaugam jocul in baza de date
+                    DataBasePlayer dbPlayerForId=findPlayerByNameInDb(player1.getName());
+                    GameHistory dbGame = new GameHistory(randomName, dbPlayerForId.getId(),null, LocalDateTime.now(),null,"running");
+                    GameHistory addedGame = restTemplate.postForObject("http://localhost:8000/api/game-history", dbGame, GameHistory.class);
+                    restTemplate.put("http://localhost:8000/api/game-history/{id}?playerId={playerId}", null, addedGame.getId(), findPlayerByNameInDb(player2.getName()).getId());
+                    System.out.println("Added Game: " + addedGame.getId());
+                    // repartizam cate un simbol playerilor
+                    player1.setSymbol('X');
+                    player2.setSymbol('O');
+                    // bagam playerii in joc
+                    game.setLobbyName(randomName);
+                    game.join(player1);
+                    System.out.println("Player " + player1.getName() + " joined the game: " + player1.getSymbol());
+                    broadcastMessage(game, "Player " + player2.getName() + " joined the game: " + player2.getSymbol());
+                    game.join(player2);
+                    System.out.println("Player " + player1.getName() + " joined the game: " + player1.getSymbol());
+                    broadcastMessage(game, "Player " + player2.getName() + " joined the game: " + player2.getSymbol());
+                    // Adăugam jocul la lista de jocuri din turneu
+                    tournament.getTournamentGames().add(game);
+                }
+            }
+
+            // Setăm starea jocurilor noi ca fiind "running"
+            for (Game game : games.values()) {
+                game.start();
+            }
+            // setam jucatorii pentru urmatoarea runda
+            tournament.setNumberOfPlayerForRound(2);
         }
     }
 

@@ -14,11 +14,13 @@ public class Tournament {
     private boolean tournamentOver;
     private boolean tournamentStarted;
     private Game finalGame;
+    private int numberOfPlayerForRound;
 
     public Tournament(TournamentHistory tournamentDb) {
         this.tournamentDb=tournamentDb;
         this.tournamentOver=false;
         this.tournamentStarted=false;
+        this.numberOfPlayerForRound=8;
     }
 
     public String getLobbyName() {
@@ -63,5 +65,33 @@ public class Tournament {
 
     public void setTournamentGames(List<Game> tournamentGames) {
         this.tournamentGames = tournamentGames;
+    }
+
+    public void setTournamentDb(TournamentHistory tournamentDb) {
+        this.tournamentDb = tournamentDb;
+    }
+
+    public void setTournamentOver(boolean tournamentOver) {
+        this.tournamentOver = tournamentOver;
+    }
+
+    public void setTournamentStarted(boolean tournamentStarted) {
+        this.tournamentStarted = tournamentStarted;
+    }
+
+    public void setNumberOfPlayerForRound(int numberOfPlayerForRound) {
+        this.numberOfPlayerForRound = numberOfPlayerForRound;
+    }
+
+    public boolean isTournamentOver() {
+        return tournamentOver;
+    }
+
+    public boolean isTournamentStarted() {
+        return tournamentStarted;
+    }
+
+    public int getNumberOfPlayerForRound() {
+        return numberOfPlayerForRound;
     }
 }
