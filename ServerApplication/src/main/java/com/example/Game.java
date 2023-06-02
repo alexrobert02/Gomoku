@@ -214,4 +214,18 @@ class Game {
     {
         return winner;
     }
+    public String getPlayerNames() {
+        StringBuilder names = new StringBuilder();
+
+        for (Player player : players) {
+            names.append(player.getName()).append(", ");
+        }
+
+        // Remove the trailing comma and space
+        if (names.length() > 0) {
+            names.setLength(names.length() - 2);
+        }
+
+        return names.toString();
+    }
 }

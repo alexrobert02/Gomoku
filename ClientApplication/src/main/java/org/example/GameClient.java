@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GameClient extends Application {
     private String host;
@@ -74,11 +77,25 @@ public class GameClient extends Application {
                         if (response.contains ("Game started!")) {
                             ui.showGameBoardScene();
                         }
-//                        if (response.equals("WIN") || response.equals("LOSS") || response.equals("TIME_UP")) {
-//                            gameIsOver = true;
-//                            ui.appendMessage("Type anything to exit");
-//                            break;
-//                        }
+                        if (response.contains ("Joined: ")) {
+                            // Find the index of the colon character
+                            int colonIndex = response.indexOf(":");
+
+                            // Extract the substring after the colon
+                            String names = response.substring(colonIndex + 2).trim();
+                            ui.addJoinedPlayersLabel(names);
+
+                        }
+                        if (response.contains ("Second player: ")) {
+                            int colonIndex = response.indexOf(":");
+                            String name = response.substring(colonIndex + 2).trim();
+                            ui.modifyJoinedPlayersLabel(name);
+                        }
+                        if (response.equals("WIN") || response.equals("LOSS") || response.equals("TIME_UP")) {
+                            gameIsOver = true;
+                            ui.appendMessage("Type anything to exit");
+                            break;
+                        }
                     }
                 } catch (IOException e) {
                     ui.appendMessage("Error reading server response: " + e.getMessage());

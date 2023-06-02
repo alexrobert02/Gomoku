@@ -85,6 +85,7 @@ public class GameServer {
                     DataBasePlayer dbPlayer = new DataBasePlayer(player.getName());
                     DataBasePlayer addedPlayer = restTemplate.postForObject("http://localhost:8000/api/players", dbPlayer, DataBasePlayer.class);
                     System.out.println("Added Player: " + addedPlayer.getName()+addedPlayer.getId());
+                    broadcastMessage(game, "Added player" + addedPlayer.getName());
                     //triggerToInsertPlayerToDatabase(dbPlayer);
                     /**
                      * adaugam jocul creat in baza de date
@@ -100,8 +101,8 @@ public class GameServer {
 
                         // Send confirmation message to the client
                         clientThread.sendResponse("GAME_CREATED");
-                        System.out.println("Player " + player.getName() + " joined the game: " + player.getSymbol());
-                        broadcastMessage(game, "Player " + player.getName() + " joined the game: " + player.getSymbol());
+                        System.out.println("Player " + player.getName() + " created the game: " + player.getSymbol());
+                        broadcastMessage(game, "Player " + player.getName() + " created the game: " + player.getSymbol());
                     }
                 }
                 else {
@@ -201,7 +202,15 @@ public class GameServer {
                         clientThread.sendResponse("GAME_JOINED");
                         // Send confirmation message to the client
                         System.out.println("Player " + player.getName() + " joined the game: " + player.getSymbol());
-                        broadcastMessage(game, "Player " + player.getName() + " joined the game: " + player.getSymbol());
+                        //broadcastMessage(game, "Player " + player.getName() + " joined the game: " + player.getSymbol());
+                        clientThread.sendResponse("Joined: " + game.getPlayerNames());
+                        System.out.println("Joined: " + game.getPlayerNames());
+                        for (ClientThread differentClientThread: clientThreads) {
+                            if (differentClientThread.getGame() == game && differentClientThread != clientThread) {
+                                differentClientThread.sendResponse("Second player: " + player.getName());
+                                System.out.println("Second player: " + player.getName());
+                            }
+                        }
 
 //                        if (game.isFull()) {
 //                            // Start the game once both players have joined

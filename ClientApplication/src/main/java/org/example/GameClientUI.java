@@ -27,7 +27,9 @@ public class GameClientUI extends Application {
     private String username;
     private int playerIndex;
     private boolean playerTurn;
-    private Label[][] gameBoardCells;;
+    private Label[][] gameBoardCells;
+    private StringBuilder joinedPlayersContent;
+    private Label joinedPlayersLabel;
 
     public GameClientUI(GameClient gameClient) {
         this.gameClient = gameClient;
@@ -187,6 +189,30 @@ public class GameClientUI extends Application {
         joinGameLabel.setAlignment(Pos.CENTER);
         joinGameLabel.setPadding(new Insets(0, 0, 0, 0));
 
+
+
+        joinedPlayersContent = new StringBuilder();
+        joinedPlayersContent.append("JOINED PLAYERS\n");
+
+
+        // Set the text content of the label
+        joinedPlayersLabel = new Label(joinedPlayersContent.toString());
+        joinedPlayersLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        joinedPlayersLabel.setTextFill(Color.BLACK);
+        joinedPlayersLabel.setAlignment(Pos.CENTER_LEFT);
+        joinedPlayersLabel.setPadding(new Insets(50, 0, 50, 50));
+        joinRoot.setLeft(joinedPlayersLabel);
+        joinedPlayersLabel.setVisible(false);
+
+
+        Label testLabel = new Label("JOINED PLAYERS");
+        testLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        testLabel.setTextFill(Color.BLACK);
+        testLabel.setAlignment(Pos.CENTER_RIGHT);
+        testLabel.setPadding(new Insets(50,50,50,0));
+        testLabel.setVisible(false);
+        joinRoot.setRight(testLabel);
+
         Button joinButton = new Button("Join");
         joinButton.setMinWidth(400);
         joinButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -202,17 +228,12 @@ public class GameClientUI extends Application {
             joinGameLabel.setVisible(false);
         });
 
-        centerContainer.getChildren().addAll(lobbyNameField, joinButton);
+        centerContainer.getChildren().addAll(joinGameLabel, lobbyNameField, joinButton);
         joinRoot.setCenter(centerContainer);
 
         joinRoot.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
 
-        StackPane joinGamePane = new StackPane(joinGameLabel);
-        joinGamePane.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
-
-        BorderPane.setAlignment(joinGamePane, Pos.TOP_CENTER);
-        BorderPane.setMargin(joinGamePane, new Insets(200, 0, 0, 0));
-        joinRoot.setTop(joinGamePane);
+        //joinRoot.setTop(joinGamePane);
 
         Scene gameScene = new Scene(joinRoot, 1000, 600);
         stage.setScene(gameScene);
@@ -290,9 +311,8 @@ public class GameClientUI extends Application {
 
     public void showStartScene(String lobbyName) {
         BorderPane startRoot = new BorderPane();
-        //startRoot.setPadding(new Insets(10, 10, 10, 10));
 
-        // Create the arrow button
+        // Create the arrow button and set it at the top-left corner
         Button backButton = new Button("←");
         backButton.setMinWidth(150);
         backButton.setFont(Font.font(20));
@@ -300,14 +320,46 @@ public class GameClientUI extends Application {
         backButton.setOnAction(e -> {
             showGameScene();
         });
-
-        // Apply CSS styles to center the arrow inside the button
         backButton.setStyle("-fx-alignment: center; -fx-content-display: center;");
         backButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY)));
         startRoot.setTop(backButton);
 
-        VBox centerContainer = new VBox(20);
-        centerContainer.setAlignment(Pos.CENTER);
+        // Create a StringBuilder to construct the text content
+        joinedPlayersContent = new StringBuilder();
+        joinedPlayersContent.append("JOINED PLAYERS\n");
+        joinedPlayersContent.append(username).append("\n");
+
+
+        Platform.runLater(() -> {
+            // Set the text content of the label
+            joinedPlayersLabel = new Label(joinedPlayersContent.toString());
+            joinedPlayersLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+            joinedPlayersLabel.setTextFill(Color.BLACK);
+            joinedPlayersLabel.setAlignment(Pos.CENTER_LEFT);
+            joinedPlayersLabel.setPadding(new Insets(50, 0, 50, 50));
+            startRoot.setLeft(joinedPlayersLabel);
+        });
+
+        Label testLabel = new Label("JOINED PLAYERS");
+        testLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        testLabel.setTextFill(Color.BLACK);
+        testLabel.setAlignment(Pos.CENTER_RIGHT);
+        testLabel.setPadding(new Insets(50,50,50,0));
+        testLabel.setVisible(false);
+        startRoot.setRight(testLabel);
+
+        // Create a VBox to contain the center content
+        VBox centerVBox = new VBox();
+        centerVBox.setAlignment(Pos.CENTER);
+        centerVBox.setSpacing(20);
+        centerVBox.maxWidth(400);
+
+        // Add the elements to the VBox as needed
+        Label gameLobbyLabel = new Label("Game lobby: " + lobbyName);
+        gameLobbyLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        gameLobbyLabel.setTextFill(Color.BLACK);
+        gameLobbyLabel.setPadding(new Insets(10, 0, 0, 0));
+        centerVBox.getChildren().add(gameLobbyLabel);
 
         Button startButton = new Button("Start");
         startButton.setMinWidth(400);
@@ -317,17 +369,15 @@ public class GameClientUI extends Application {
         startButton.setOnAction(e -> {
             gameClient.sendMessageToServer("START");
         });
+        centerVBox.getChildren().add(startButton);
 
-        Label gameLobbyLabel = new Label("Game lobby: " + lobbyName + "                                                       ");
-        gameLobbyLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
-        gameLobbyLabel.setTextFill(Color.BLACK);
-        gameLobbyLabel.setPadding(new Insets(10, 0, 0, 0)); // Adjust the padding for positioning
+        // Create a BorderPane to hold the left and center content
+        BorderPane contentPane = new BorderPane();
+        contentPane.setCenter(centerVBox);
 
-        VBox.setMargin(gameLobbyLabel, new Insets(0, 0, 40, 0)); // Add margin to the bottom of the label
-        VBox.setMargin(startButton, new Insets(40, 0, 0, 0)); // Add margin to the top of the button
-
-        centerContainer.getChildren().addAll(gameLobbyLabel, startButton);
-        startRoot.setCenter(centerContainer);
+        // Adjust alignment of the contentPane within the startRoot
+        startRoot.setCenter(contentPane);
+        BorderPane.setAlignment(contentPane, Pos.CENTER);
 
         startRoot.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
 
@@ -467,6 +517,24 @@ public class GameClientUI extends Application {
 //            Stage stage = (Stage) gameScenePane.getScene().getWindow();
             stage.setScene(winnerScene);
             stage.show();
+        });
+    }
+
+    public void modifyJoinedPlayersLabel(String name) {
+        joinedPlayersContent.append(name).append("\n");
+        Platform.runLater(() -> {
+            joinedPlayersLabel.setText(joinedPlayersContent.toString());
+        });
+    }
+
+    public void addJoinedPlayersLabel(String names) {
+        String[] namesArray = names.split(", ");
+        Platform.runLater(() -> {
+            for (String name : namesArray) {
+                joinedPlayersContent.append(name).append("\n");
+            }
+            joinedPlayersLabel.setText(joinedPlayersContent.toString());
+            joinedPlayersLabel.setVisible(true);
         });
     }
 }
