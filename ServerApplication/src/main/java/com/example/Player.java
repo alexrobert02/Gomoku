@@ -27,7 +27,7 @@ class Player {
             System.err.println("Error creating input/output streams for player: " + e.getMessage());
         }
         timer = new Timer();
-        timeRemaining = 60; // 60 seconds by default
+        timeRemaining = 600; // 60 seconds by default
     }
 
     public int getTimeRemaining() {

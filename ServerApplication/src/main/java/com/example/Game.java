@@ -94,7 +94,9 @@ class Game {
                 if (currentPlayerTimeRemaining <= 0) {
                     players[currentPlayerIndex].notifyTimeout();
                     players[1 - currentPlayerIndex].notifyWin(players[1 - currentPlayerIndex].getName());
+                    players[currentPlayerIndex].notifyWin(players[1 - currentPlayerIndex].getName());
                     gameOver = true;
+                    winner=players[1-currentPlayerIndex];
                 } else {
                     players[currentPlayerIndex].notifyTurn();
                 }
@@ -140,7 +142,9 @@ class Game {
                 if (currentPlayerTimeRemaining <= 0) {
                     players[currentPlayerIndex].notifyTimeout();
                     players[1 - currentPlayerIndex].notifyWin(players[1 - currentPlayerIndex].getName());
+                    players[currentPlayerIndex].notifyWin(players[1 - currentPlayerIndex].getName());
                     gameOver = true;
+                    winner=players[1 - currentPlayerIndex];
                 }
             }
         }, 1000, 1000); // Decrease currentPlayerTimeRemaining every second

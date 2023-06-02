@@ -125,7 +125,7 @@ public class GameServer {
                 // adaugam playerii in baza de date
                 DataBasePlayer dbPlayer = new DataBasePlayer(player.getName());
                 DataBasePlayer addedPlayer = restTemplate.postForObject("http://localhost:8000/api/players", dbPlayer, DataBasePlayer.class);
-                System.out.println("Added Player: " + addedPlayer.getName()+addedPlayer.getId());
+                System.out.println("Added Player: " + addedPlayer.getName());
                 // adaugam turneul in baza de date
                 TournamentHistory tournamentDb = new TournamentHistory(lobbyName, addedPlayer.getId(), LocalDateTime.now(), null, "running");
                 restTemplate.postForObject("http://localhost:8000/api/tournament-history", tournamentDb, TournamentHistory.class);
@@ -158,7 +158,7 @@ public class GameServer {
                     DataBasePlayer addedPlayer = restTemplate.postForObject("http://localhost:8000/api/players", dbPlayer, DataBasePlayer.class);
                     System.out.println("Added Player: " + addedPlayer.getName());
                     clientThread.sendResponse("TOURNAMENT_JOINED");
-                    System.out.println(tournament.getTournamentPlayers().size());
+                    //System.out.println(tournament.getTournamentPlayers().size());
                     if (tournament.getTournamentPlayers().size()==8) {
                         // Start the tournament once the players have joined
                         createTournament(tournament);
@@ -253,6 +253,7 @@ public class GameServer {
                     broadcastMessage(game, "Player " + player.getName() + " made a move at (" + row + ", " + col + ")");
                     game.makeMove(player, row, col);
                     if (game.isGameOver()) {
+                        System.out.println("gameover");
                         GameHistory gameDb=findGameByLobbyNameInDb(game.getLobbyName());
                         restTemplate.put("http://localhost:8000/api/game-history/{id}/status?status={status}", null,gameDb.getId(),"stopped");
                         exportDataToCSV();
@@ -261,21 +262,26 @@ public class GameServer {
                         //clientThread.sendResponse("EXIT");
                         //stop();
                         // luam castigatorul si il punem in lista de castigatori a turneului
+                        System.out.println(tournamentInProgress);
                         if(tournamentInProgress==true)
                         {
                             for(Tournament findTournament:tournaments.values())
                             {
+                                System.out.println(findTournament.getLobbyName()+ findTournament.isTournamentOver());
                                 if(findTournament.isTournamentOver()==false)
                                 {
                                     findTournament.getTournamentWinners().add(game.getWinner());
+                                    System.out.println(findTournament.getTournamentWinners().size());
                                     if(findTournament.getNumberOfPlayerForRound()==findTournament.getTournamentWinners().size())
                                     {
+                                        System.out.println("incepe runda doi");
                                         newRound(findTournament);
                                     }
                                 }
                                 // verificam daca s-a terminat turneul
                                 if(findTournament.getTournamentGames().size()==1)
                                 {
+                                    System.out.println("tournament over");
                                     tournamentInProgress=false;
                                     findTournament.setFinalGame(game);
                                 }
