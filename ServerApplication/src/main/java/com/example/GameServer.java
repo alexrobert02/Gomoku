@@ -455,13 +455,16 @@ public class GameServer {
                     broadcastMessage(game, "Player " + player2.getName() + " joined the game: " + player2.getSymbol());
                     // Adăugam jocul la lista de jocuri din turneu
                     tournament.getTournamentGames().add(game);
+                    //game.start();
+                }
+                for(Game game:tournament.getTournamentGames())
+                {
                     game.start();
                     Player currentPlayer = game.getCurrentPlayer();
                     System.out.println("Game started! It's " + currentPlayer.getName() + "'s turn.");
                     broadcastMessage(game, "Game started! It's " + currentPlayer.getName() + "'s turn.");
                     currentPlayer.notifyTurn();
                 }
-
             }
         }
     }
