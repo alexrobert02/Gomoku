@@ -94,4 +94,19 @@ public class Tournament {
     public int getNumberOfPlayerForRound() {
         return numberOfPlayerForRound;
     }
+
+    public String getPlayerNames() {
+        StringBuilder names = new StringBuilder();
+
+        for (Player player : tournamentPlayers) {
+            names.append(player.getName()).append(", ");
+        }
+
+        // Remove the trailing comma and space
+        if (names.length() > 0) {
+            names.setLength(names.length() - 2);
+        }
+
+        return names.toString();
+    }
 }

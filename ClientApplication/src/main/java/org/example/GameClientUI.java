@@ -151,33 +151,212 @@ public class GameClientUI extends Application {
         root.setBottom(chatArea);
         chatArea.setMaxHeight(50);
 
-        VBox buttonBox = new VBox(10); // VBox to hold the buttons
-        buttonBox.setAlignment(Pos.CENTER);
+        VBox gameButtonsBox = new VBox(10); // VBox to hold the buttons
+        gameButtonsBox.setAlignment(Pos.CENTER);
+        gameButtonsBox.setPadding(new Insets(0,0,0,200));
 
-        Button hostButton = new Button("Host");
-        hostButton.setAlignment(Pos.CENTER);
-        hostButton.setMinWidth(150); // Set minimum width for the button
-        hostButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY))); // Set button background color
-        hostButton.setTextFill(Color.WHITE); // Set button text color
-        hostButton.setFont(Font.font(20)); // Set font size for the button text
-        hostButton.setOnAction(e -> showHostWindow());
-        buttonBox.getChildren().add(hostButton); // Add the "Host" button to the VBox
+        Button hostGameButton = new Button("Host game");
+        hostGameButton.setAlignment(Pos.CENTER);
+        hostGameButton.setMinWidth(200); // Set minimum width for the button
+        hostGameButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY))); // Set button background color
+        hostGameButton.setTextFill(Color.WHITE); // Set button text color
+        hostGameButton.setFont(Font.font(20)); // Set font size for the button text
+        hostGameButton.setOnAction(e -> showHostWindow());
+        gameButtonsBox.getChildren().add(hostGameButton); // Add the "Host" button to the VBox
 
-        Button joinButton = new Button("Join");
-        joinButton.setAlignment(Pos.CENTER);
-        joinButton.setMinWidth(150); // Set minimum width for the button
-        joinButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY))); // Set button background color
-        joinButton.setTextFill(Color.WHITE); // Set button text color
-        joinButton.setFont(Font.font(20)); // Set font size for the button text
-        joinButton.setOnAction(e -> showJoinWindow());
-        buttonBox.getChildren().add(joinButton); // Add the "Join" button to the VBox
+        Button joinGameButton = new Button("Join game");
+        joinGameButton.setAlignment(Pos.CENTER);
+        joinGameButton.setMinWidth(200); // Set minimum width for the button
+        joinGameButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY))); // Set button background color
+        joinGameButton.setTextFill(Color.WHITE); // Set button text color
+        joinGameButton.setFont(Font.font(20)); // Set font size for the button text
+        joinGameButton.setOnAction(e -> showJoinWindow());
+        gameButtonsBox.getChildren().add(joinGameButton); // Add the "Join" button to the VBox
 
-        root.setCenter(buttonBox); // Set the VBox as the bottom of the BorderPane
+        root.setLeft(gameButtonsBox); // Set the VBox as the bottom of the BorderPane
+
+
+        VBox tournamentButtonsBox = new VBox(10); // VBox to hold the buttons
+        tournamentButtonsBox.setAlignment(Pos.CENTER);
+        tournamentButtonsBox.setPadding(new Insets(0,200,0,0));
+
+        Button hostTournamentButton = new Button("Host tournament");
+        hostTournamentButton.setAlignment(Pos.CENTER);
+        hostTournamentButton.setMinWidth(200); // Set minimum width for the button
+        hostTournamentButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY))); // Set button background color
+        hostTournamentButton.setTextFill(Color.WHITE); // Set button text color
+        hostTournamentButton.setFont(Font.font(20)); // Set font size for the button text
+        hostTournamentButton.setOnAction(e -> showHostTournamentWindow());
+        tournamentButtonsBox.getChildren().add(hostTournamentButton); // Add the "Host" button to the VBox
+
+        Button joinTournamentButton = new Button("Join tournament");
+        joinTournamentButton.setAlignment(Pos.CENTER);
+        joinTournamentButton.setMinWidth(200); // Set minimum width for the button
+        joinTournamentButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY))); // Set button background color
+        joinTournamentButton.setTextFill(Color.WHITE); // Set button text color
+        joinTournamentButton.setFont(Font.font(20)); // Set font size for the button text
+        joinTournamentButton.setOnAction(e -> showJoinTournamentWindow());
+        tournamentButtonsBox.getChildren().add(joinTournamentButton); // Add the "Join" button to the VBox
+
+        root.setRight(tournamentButtonsBox); // Set the VBox as the bottom of the BorderPane
+
+
         root.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
 
         Scene gameScene = new Scene(root, 1000, 600);
         stage.setScene(gameScene);
         stage.show();
+    }
+
+    private void showJoinTournamentWindow() {
+        BorderPane joinTournamentRoot = new BorderPane();
+        //startRoot.setPadding(new Insets(10, 10, 10, 10));
+
+        TextField lobbyNameField = new TextField();
+        lobbyNameField.setMaxWidth(300); // Set preferred width for the input field
+
+        // Create the arrow button
+        Button backButton = new Button("←");
+        backButton.setMinWidth(150);
+        backButton.setFont(Font.font(20));
+        backButton.setAlignment(Pos.TOP_LEFT);
+        backButton.setOnAction(e -> {
+            showGameScene();
+        });
+
+        // Apply CSS styles to center the arrow inside the button
+        backButton.setStyle("-fx-alignment: center; -fx-content-display: center;");
+        backButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY)));
+        joinTournamentRoot.setTop(backButton);
+
+        VBox centerContainer = new VBox(20);
+        centerContainer.setAlignment(Pos.CENTER);
+
+        Label joinGameLabel = new Label("Insert game lobby:");
+        joinGameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 30));
+        joinGameLabel.setTextFill(Color.BLACK);
+        joinGameLabel.setAlignment(Pos.CENTER);
+        joinGameLabel.setPadding(new Insets(0, 0, 0, 0));
+
+
+
+        joinedPlayersContent = new StringBuilder();
+        joinedPlayersContent.append("JOINED PLAYERS\n");
+
+
+        // Set the text content of the label
+        joinedPlayersLabel = new Label(joinedPlayersContent.toString());
+        joinedPlayersLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        joinedPlayersLabel.setTextFill(Color.BLACK);
+        joinedPlayersLabel.setAlignment(Pos.CENTER_LEFT);
+        joinedPlayersLabel.setPadding(new Insets(50, 0, 50, 50));
+        joinTournamentRoot.setLeft(joinedPlayersLabel);
+        joinedPlayersLabel.setVisible(false);
+
+
+        Label testLabel = new Label("JOINED PLAYERS");
+        testLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        testLabel.setTextFill(Color.BLACK);
+        testLabel.setAlignment(Pos.CENTER_RIGHT);
+        testLabel.setPadding(new Insets(50,50,50,0));
+        testLabel.setVisible(false);
+        joinTournamentRoot.setRight(testLabel);
+
+        Button joinButton = new Button("Join");
+        joinButton.setMinWidth(400);
+        joinButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY)));
+        joinButton.setTextFill(Color.WHITE);
+        joinButton.setFont(Font.font(20));
+        joinButton.setOnAction(e -> {
+            String lobbyName = lobbyNameField.getText();
+            String command = ("join_tournament " + lobbyName + " " + username);
+            gameClient.sendMessageToServer(command);
+            //joinButton.setVisible(false);
+            playerIndex = 1;
+            joinButton.setVisible(false);
+            joinGameLabel.setVisible(false);
+        });
+
+        centerContainer.getChildren().addAll(joinGameLabel, lobbyNameField, joinButton);
+        joinTournamentRoot.setCenter(centerContainer);
+
+        joinTournamentRoot.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        //joinRoot.setTop(joinGamePane);
+
+        Scene gameTournamentScene = new Scene(joinTournamentRoot, 1000, 600);
+        stage.setScene(gameTournamentScene);
+        stage.show();
+    }
+
+    private void showHostTournamentWindow() {
+        Stage hostTournamentStage = new Stage();
+        hostTournamentStage.initModality(Modality.APPLICATION_MODAL); // Prevent interaction with other windows
+        hostTournamentStage.setTitle("Create Tournament");
+
+        BorderPane hostTournamentRoot = new BorderPane();
+        hostTournamentRoot.setPadding(new Insets(10, 10, 10, 10));
+        hostTournamentRoot.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
+
+        Label gameDataLabel = new Label("Tournament Data");
+        gameDataLabel.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        gameDataLabel.setTextFill(Color.BLACK);
+        gameDataLabel.setPadding(new Insets(50,10,10,10));
+        hostTournamentRoot.setTop(gameDataLabel);
+        BorderPane.setAlignment(gameDataLabel, Pos.CENTER);
+
+        GridPane inputGrid = new GridPane();
+        inputGrid.setAlignment(Pos.CENTER);
+        inputGrid.setHgap(10);
+        inputGrid.setVgap(10);
+
+        Label timeLimitLabel = new Label("Time limit (in seconds)");
+        TextField timeLimitField = new TextField();
+        timeLimitField.setPrefWidth(200);
+
+        Label lobbyNameLabel = new Label("Lobby name ");
+        TextField lobbyNameField = new TextField();
+        lobbyNameField.setPrefWidth(200);
+
+        Button createGameButton = new Button("CREATE GAME");
+        createGameButton.setMinWidth(100); // Set minimum width for the button
+        createGameButton.setBackground(new Background(new BackgroundFill(Color.ORANGE, CornerRadii.EMPTY, Insets.EMPTY))); // Set button background color
+        createGameButton.setTextFill(Color.WHITE); // Set button text color
+        createGameButton.setFont(Font.font(15)); // Set font size for the button text
+        createGameButton.setOnAction(e -> {
+            String timeLimit = timeLimitField.getText();
+            String lobbyName = lobbyNameField.getText();
+
+            //Process the input and create the game
+            if (timeLimitField.getText().isEmpty()) {
+                player1Timer = 0;
+                player2Timer = 0;
+                timeLimit = "0";
+            }
+            else {
+                player1Timer = Long.parseLong(timeLimitField.getText());
+                player2Timer = Long.parseLong(timeLimitField.getText());
+            }
+            hostTournamentStage.close();
+            String command = ("create_tournament " + lobbyName + " " + username);
+            gameClient.sendMessageToServer(command);
+            playerIndex = 0;
+            showStartScene(lobbyName);
+        });
+
+        inputGrid.add(lobbyNameField, 0, 0);
+        inputGrid.add(lobbyNameLabel, 1, 0);
+
+        inputGrid.add(timeLimitField, 0, 1);
+        inputGrid.add(timeLimitLabel, 1, 1);
+
+        hostTournamentRoot.setCenter(inputGrid);
+        hostTournamentRoot.setBottom(createGameButton);
+        BorderPane.setAlignment(createGameButton, Pos.CENTER); // Align the button at the center
+
+        Scene hostScene = new Scene(hostTournamentRoot, 400, 300);
+        hostTournamentStage.setScene(hostScene);
+        hostTournamentStage.showAndWait();
     }
 
     private void showJoinWindow() {

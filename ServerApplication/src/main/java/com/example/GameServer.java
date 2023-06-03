@@ -134,6 +134,7 @@ public class GameServer {
                 // creem turneul
                 Tournament tournament = new Tournament(tournamentDb);
                 tournament.setLobbyName(lobbyName);
+                clientThread.setTournament(tournament);
                 // Adăugați turneul în lista de turnee a serverului
                 tournaments.put(lobbyName,tournament);
                 // adaugam playerii la lista de jucatori a turneului
@@ -156,10 +157,20 @@ public class GameServer {
                     // Create a new player and add them to the game
                     Player player = new Player(parts[2], 'O', clientThread.getClientSocket());
                     tournament.getTournamentPlayers().add(player);
+                    clientThread.setTournament(tournament);
                     DataBasePlayer dbPlayer = new DataBasePlayer(player.getName());
                     DataBasePlayer addedPlayer = restTemplate.postForObject("http://localhost:8000/api/players", dbPlayer, DataBasePlayer.class);
                     System.out.println("Added Player: " + addedPlayer.getName());
                     clientThread.sendResponse("TOURNAMENT_JOINED");
+                    clientThread.sendResponse("Joined: " + tournament.getPlayerNames());
+
+                    for (ClientThread differentClientThread: clientThreads) {
+                        if (differentClientThread.getTournament() == tournament && differentClientThread != clientThread) {
+                            differentClientThread.sendResponse("Second player: " + player.getName());
+                            System.out.println("Second player: " + player.getName());
+                        }
+                    }
+
                     //System.out.println(tournament.getTournamentPlayers().size());
                     if (tournament.getTournamentPlayers().size()==8) {
                         // Start the tournament once the players have joined

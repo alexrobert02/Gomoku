@@ -78,6 +78,10 @@ public class ClientThread extends Thread {
         return tournament;
     }
 
+    public void setTournament(Tournament tournament) {
+        this.tournament = tournament;
+    }
+
     public Player getClientPlayer() {
         return clientPlayer;
     }
