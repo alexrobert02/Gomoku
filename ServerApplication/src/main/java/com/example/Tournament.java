@@ -7,6 +7,7 @@ import java.util.List;
 
 public class Tournament {
     private String lobbyName;
+    private List<ClientThread> clientThreads=new ArrayList<>();
     private TournamentHistory tournamentDb;
     private List<Player> tournamentPlayers=new ArrayList<>();
     private List<Player> tournamentWinners=new ArrayList<>();
@@ -108,5 +109,13 @@ public class Tournament {
         }
 
         return names.toString();
+    }
+
+    public List<ClientThread> getClientThreads() {
+        return clientThreads;
+    }
+
+    public void setClientThreads(List<ClientThread> clientThreads) {
+        this.clientThreads = clientThreads;
     }
 }

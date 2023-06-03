@@ -89,5 +89,6 @@ public class ClientThread extends Thread {
     public void setClientPlayer(Player clientPlayer) {
         this.clientPlayer = clientPlayer;
     }
+
 }
 

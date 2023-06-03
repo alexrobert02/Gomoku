@@ -75,6 +75,7 @@ public class GameClient extends Application {
                             ui.showWinnerPage(response);
                         }
                         if (response.contains ("Game started!")) {
+                            System.out.println("a inceput");
                             ui.showGameBoardScene();
                         }
                         if (response.contains ("Joined: ")) {

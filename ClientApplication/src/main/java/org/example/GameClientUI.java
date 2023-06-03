@@ -568,6 +568,7 @@ public class GameClientUI extends Application {
         startButton.setTextFill(Color.WHITE);
         startButton.setFont(Font.font(20));
         startButton.setOnAction(e -> {
+            System.out.println("a trimis start");
             gameClient.sendMessageToServer("START");
         });
         centerVBox.getChildren().add(startButton);
@@ -588,6 +589,7 @@ public class GameClientUI extends Application {
     }
 
     public void showGameBoardScene() {
+        System.out.println("uite tabla");
         BorderPane gameBoardRoot = new BorderPane();
         gameBoardRoot.setPadding(new Insets(10, 10, 10, 10));
         gameBoardRoot.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
