@@ -16,6 +16,9 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class GameClientUI extends Application {
     private Stage stage;
     private BorderPane root;
@@ -30,9 +33,19 @@ public class GameClientUI extends Application {
     private Label[][] gameBoardCells;
     private StringBuilder joinedPlayersContent;
     private Label joinedPlayersLabel;
+    private Label player1TimerLabel;
+    private Label player2TimerLabel;
+    private long player1Timer;
+    private long player2Timer;
+    private TimerTask player1TimerTask;
+    private TimerTask player2TimerTask;
+    private Timer player1TimerObj;
+    private Timer player2TimerObj;
 
     public GameClientUI(GameClient gameClient) {
         this.gameClient = gameClient;
+        player1Timer = 60;
+        player2Timer = 60;
     }
 
     public void setLoggedIn(boolean loggedIn) {
@@ -283,7 +296,14 @@ public class GameClientUI extends Application {
             String rounds = roundsField.getText();
             String lobbyName = lobbyNameField.getText();
             // Process the input and create the game
-            //createGame(timeLimit, rounds);
+//            if (timeLimitField.getText().isEmpty()) {
+//                player1Timer = 60;
+//                player2Timer = 60;
+//            }
+//            else {
+//                player1Timer = Long.parseLong(timeLimitField.getText());
+//                player2Timer = Long.parseLong(timeLimitField.getText());
+//            }
             hostStage.close();
             String command = ("create " + lobbyName + " " + username);
             gameClient.sendMessageToServer(command);
@@ -401,6 +421,9 @@ public class GameClientUI extends Application {
         gameBoardGrid.setHgap(5);
         gameBoardGrid.setVgap(5);
 
+        player1TimerLabel = new Label("Player 1 Timer: " + player1Timer);
+        player2TimerLabel = new Label("Player 2 Timer: " + player2Timer);
+
         gameBoardCells = new Label[rows][columns];
         // Add cells to the game board
         for (int row = 0; row < rows; row++) {
@@ -412,6 +435,9 @@ public class GameClientUI extends Application {
                 cellLabel.setStyle("-fx-border-color: black;");
                 int finalRow = row;
                 int finalCol = col;
+
+                startPlayer1Timer();
+
                 cellLabel.setOnMouseClicked(e -> {
                     // Check if it's the player's turn and the cell is not already filled
                     if (playerTurn && cellLabel.getText().isEmpty()) {
@@ -424,6 +450,15 @@ public class GameClientUI extends Application {
                     }
                     cellLabel.setAlignment(Pos.CENTER);
                     gameClient.sendMessageToServer("move " + finalRow + " " + finalCol);
+
+                    if(playerIndex == 1) {
+                        stopPlayer2Timer(); // Stop player 1 timer
+                        startPlayer1Timer(); // Start player 2 timer
+                    }
+                    else {
+                        startPlayer2Timer();
+                        stopPlayer1Timer();
+                    }
                 });
 
                 // Add the cell label to the grid
@@ -432,6 +467,10 @@ public class GameClientUI extends Application {
         }
 
         gameBoardRoot.setCenter(gameBoardGrid);
+
+        VBox timerBox = new VBox(10, player1TimerLabel, player2TimerLabel);
+        timerBox.setAlignment(Pos.CENTER);
+        gameBoardRoot.setTop(timerBox);
 
         chatArea = new TextArea();
         chatArea.setEditable(false);
@@ -450,7 +489,7 @@ public class GameClientUI extends Application {
 
     public void startGame() {
         if (loggedIn) {
-            showGameSceneTest();
+            showGameScene();
             gameClient.connectToServer();
         }
     }
@@ -487,11 +526,14 @@ public class GameClientUI extends Application {
                 cellLabel.setTextFill(Color.BLACK);
                 cellLabel.setFont(Font.font("Arial", FontWeight.BOLD, 33));
                 cellLabel.setAlignment(Pos.CENTER);
-                if(playerIndex == 0) {
+                if (playerIndex == 0) {
                     cellLabel.setText("O");
-                }
-                else {
+                    startPlayer1Timer();
+                    stopPlayer2Timer();
+                } else {
                     cellLabel.setText("X");
+                    stopPlayer1Timer(); // Stop player 1 timer
+                    startPlayer2Timer(); // Start player 2 timer
                 }
             });
         }
@@ -537,4 +579,59 @@ public class GameClientUI extends Application {
             joinedPlayersLabel.setVisible(true);
         });
     }
+
+    private void startPlayer1Timer() {
+        stopPlayer1Timer(); // Stop the timer if it's already running
+        player1TimerObj = new Timer();
+        player1TimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                player1Timer--;
+                updatePlayer1TimerLabel();
+            }
+        };
+        player1TimerObj.scheduleAtFixedRate(player1TimerTask, 1000, 1000); // Update timer label every second
+    }
+
+    private void stopPlayer1Timer() {
+        if (player1TimerTask != null) {
+            player1TimerTask.cancel();
+            player1TimerTask = null;
+            player1TimerObj.cancel();
+            player1TimerObj.purge();
+            player1TimerObj = null;
+        }
+    }
+
+    private void startPlayer2Timer() {
+        stopPlayer2Timer(); // Stop the timer if it's already running
+        player2TimerObj = new Timer();
+        player2TimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                player2Timer--;
+                updatePlayer2TimerLabel();
+            }
+        };
+        player2TimerObj.scheduleAtFixedRate(player2TimerTask, 500, 1000); // Update timer label every second
+    }
+
+    private void stopPlayer2Timer() {
+        if (player2TimerTask != null) {
+            player2TimerTask.cancel();
+            player2TimerTask = null;
+            player2TimerObj.cancel();
+            player2TimerObj.purge();
+            player2TimerObj = null;
+        }
+    }
+
+    private void updatePlayer1TimerLabel() {
+        Platform.runLater(() -> player1TimerLabel.setText("Player 1 Timer: " + player1Timer));
+    }
+
+    private void updatePlayer2TimerLabel() {
+        Platform.runLater(() -> player2TimerLabel.setText("Player 2 Timer: " + player2Timer));
+    }
+
 }
