@@ -52,6 +52,14 @@ public class GameClientUI extends Application {
         this.loggedIn = loggedIn;
     }
 
+    public void setPlayer1Timer(long player1Timer) {
+        this.player1Timer = player1Timer;
+    }
+
+    public void setPlayer2Timer(long player2Timer) {
+        this.player2Timer = player2Timer;
+    }
+
     public void appendMessage(String message) {
         Platform.runLater(() -> chatArea.appendText(message + "\n"));
     }
@@ -278,10 +286,6 @@ public class GameClientUI extends Application {
         TextField timeLimitField = new TextField();
         timeLimitField.setPrefWidth(200);
 
-        Label roundsLabel = new Label("Number of rounds");
-        TextField roundsField = new TextField();
-        roundsField.setPrefWidth(200);
-
         Label lobbyNameLabel = new Label("Lobby name ");
         TextField lobbyNameField = new TextField();
         lobbyNameField.setPrefWidth(200);
@@ -293,19 +297,20 @@ public class GameClientUI extends Application {
         createGameButton.setFont(Font.font(15)); // Set font size for the button text
         createGameButton.setOnAction(e -> {
             String timeLimit = timeLimitField.getText();
-            String rounds = roundsField.getText();
             String lobbyName = lobbyNameField.getText();
-            // Process the input and create the game
-//            if (timeLimitField.getText().isEmpty()) {
-//                player1Timer = 60;
-//                player2Timer = 60;
-//            }
-//            else {
-//                player1Timer = Long.parseLong(timeLimitField.getText());
-//                player2Timer = Long.parseLong(timeLimitField.getText());
-//            }
+
+            //Process the input and create the game
+            if (timeLimitField.getText().isEmpty()) {
+                player1Timer = 60;
+                player2Timer = 60;
+                timeLimit = "60";
+            }
+            else {
+                player1Timer = Long.parseLong(timeLimitField.getText());
+                player2Timer = Long.parseLong(timeLimitField.getText());
+            }
             hostStage.close();
-            String command = ("create " + lobbyName + " " + username);
+            String command = ("create " + lobbyName + " " + username + " " + timeLimit);
             gameClient.sendMessageToServer(command);
             playerIndex = 0;
             showStartScene(lobbyName);
@@ -316,9 +321,6 @@ public class GameClientUI extends Application {
 
         inputGrid.add(timeLimitField, 0, 1);
         inputGrid.add(timeLimitLabel, 1, 1);
-
-        inputGrid.add(roundsField, 0, 2);
-        inputGrid.add(roundsLabel, 1, 2);
 
         hostRoot.setCenter(inputGrid);
         hostRoot.setBottom(createGameButton);
@@ -580,7 +582,7 @@ public class GameClientUI extends Application {
         });
     }
 
-    private void startPlayer1Timer() {
+    public void startPlayer1Timer() {
         stopPlayer1Timer(); // Stop the timer if it's already running
         player1TimerObj = new Timer();
         player1TimerTask = new TimerTask() {
@@ -593,7 +595,7 @@ public class GameClientUI extends Application {
         player1TimerObj.scheduleAtFixedRate(player1TimerTask, 1000, 1000); // Update timer label every second
     }
 
-    private void stopPlayer1Timer() {
+    public void stopPlayer1Timer() {
         if (player1TimerTask != null) {
             player1TimerTask.cancel();
             player1TimerTask = null;
@@ -603,7 +605,7 @@ public class GameClientUI extends Application {
         }
     }
 
-    private void startPlayer2Timer() {
+    public void startPlayer2Timer() {
         stopPlayer2Timer(); // Stop the timer if it's already running
         player2TimerObj = new Timer();
         player2TimerTask = new TimerTask() {
@@ -616,7 +618,7 @@ public class GameClientUI extends Application {
         player2TimerObj.scheduleAtFixedRate(player2TimerTask, 500, 1000); // Update timer label every second
     }
 
-    private void stopPlayer2Timer() {
+    public void stopPlayer2Timer() {
         if (player2TimerTask != null) {
             player2TimerTask.cancel();
             player2TimerTask = null;
@@ -626,11 +628,11 @@ public class GameClientUI extends Application {
         }
     }
 
-    private void updatePlayer1TimerLabel() {
+    public void updatePlayer1TimerLabel() {
         Platform.runLater(() -> player1TimerLabel.setText("Player 1 Timer: " + player1Timer));
     }
 
-    private void updatePlayer2TimerLabel() {
+    public void updatePlayer2TimerLabel() {
         Platform.runLater(() -> player2TimerLabel.setText("Player 2 Timer: " + player2Timer));
     }
 

@@ -82,6 +82,8 @@ public class GameServer {
                     /**
                      * adaugam playerul in baza de date
                      */
+                    String timeLimit = parts[3];
+                    game.setTimeLimit(timeLimit);
                     DataBasePlayer dbPlayer = new DataBasePlayer(player.getName());
                     DataBasePlayer addedPlayer = restTemplate.postForObject("http://localhost:8000/api/players", dbPlayer, DataBasePlayer.class);
                     System.out.println("Added Player: " + addedPlayer.getName()+addedPlayer.getId());
@@ -205,12 +207,15 @@ public class GameServer {
                         //broadcastMessage(game, "Player " + player.getName() + " joined the game: " + player.getSymbol());
                         clientThread.sendResponse("Joined: " + game.getPlayerNames());
                         System.out.println("Joined: " + game.getPlayerNames());
+                        clientThread.sendResponse("Time limit: " + game.getTimeLimit());
+                        System.out.println("Time limit: " + game.getTimeLimit());
                         for (ClientThread differentClientThread: clientThreads) {
                             if (differentClientThread.getGame() == game && differentClientThread != clientThread) {
                                 differentClientThread.sendResponse("Second player: " + player.getName());
                                 System.out.println("Second player: " + player.getName());
                             }
                         }
+
 
 //                        if (game.isFull()) {
 //                            // Start the game once both players have joined
@@ -257,6 +262,7 @@ public class GameServer {
                         GameHistory gameDb=findGameByLobbyNameInDb(game.getLobbyName());
                         restTemplate.put("http://localhost:8000/api/game-history/{id}/status?status={status}", null,gameDb.getId(),"stopped");
                         exportDataToCSV();
+                        broadcastMessage(game, "GAME_OVER");
                         setGameToNullToAllClientThreads(game);
                         games.remove(game);
                         //clientThread.sendResponse("EXIT");

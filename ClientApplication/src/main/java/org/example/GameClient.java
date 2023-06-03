@@ -91,10 +91,20 @@ public class GameClient extends Application {
                             String name = response.substring(colonIndex + 2).trim();
                             ui.modifyJoinedPlayersLabel(name);
                         }
+                        if (response.contains ("Time limit: ")) {
+                            int colonIndex = response.indexOf(":");
+                            String timeLimit = response.substring(colonIndex + 2).trim();
+                            ui.setPlayer1Timer(Long.parseLong(timeLimit));
+                            ui.setPlayer2Timer(Long.parseLong(timeLimit));
+                        }
                         if (response.equals("WIN") || response.equals("LOSS") || response.equals("TIME_UP")) {
                             gameIsOver = true;
                             ui.appendMessage("Type anything to exit");
                             break;
+                        }
+                        if (response.contains ("GAME_OVER")) {
+                            ui.stopPlayer1Timer();
+                            ui.stopPlayer2Timer();
                         }
                     }
                 } catch (IOException e) {

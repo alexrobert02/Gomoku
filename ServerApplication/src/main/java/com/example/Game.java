@@ -14,12 +14,9 @@ class Game {
     private int currentPlayerIndex;
     private boolean gameOver;
     private boolean gameStarted;
-    private int timeLimitSeconds;
-    private Timer turnTimer;
     private GameHistory gameDb;
-    private int currentPlayerTimeRemaining;
-    private long turnStartTime;
     private Player winner;
+    private String timeLimit;
 
     public Game(GameHistory gameDb) {
         this.gameDb=gameDb;
@@ -28,7 +25,6 @@ class Game {
         currentPlayerIndex = 0;
         gameOver = false;
         gameStarted = false;
-        timeLimitSeconds = 1000; // 60 seconds by default
     }
 
     private boolean isPlayerTurn(Player player) {
@@ -87,22 +83,7 @@ class Game {
             // If the game is not over, switch to the other player's turn
             else {
                 currentPlayerIndex = 1 - currentPlayerIndex;
-
-                // Calculate the remaining time for the next player's turn
-                long elapsedTime = System.currentTimeMillis() - turnStartTime;
-                currentPlayerTimeRemaining = players[currentPlayerIndex].getTimeRemaining() - (int) (elapsedTime / 1000);
-                if (currentPlayerTimeRemaining <= 0) {
-                    players[currentPlayerIndex].notifyTimeout();
-                    players[1 - currentPlayerIndex].notifyWin(players[1 - currentPlayerIndex].getName());
-                    players[currentPlayerIndex].notifyWin(players[1 - currentPlayerIndex].getName());
-                    gameOver = true;
-                    winner=players[1-currentPlayerIndex];
-                } else {
-                    players[currentPlayerIndex].notifyTurn();
-                }
-
-                // Update the turn start time
-                turnStartTime = System.currentTimeMillis();
+                players[currentPlayerIndex].notifyTurn();
             }
         }
     }
@@ -126,28 +107,6 @@ class Game {
         }
         gameStarted = true;
         notifyAll(); // Notify all waiting threads that the game has started
-
-        // Set initial turn start time
-        turnStartTime = System.currentTimeMillis();
-
-        // Start the turn-based timer
-        turnTimer = new Timer();
-        currentPlayerTimeRemaining = players[currentPlayerIndex].getTimeRemaining();
-        turnTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                currentPlayerTimeRemaining--;
-
-                // Check if the current player's time has run out
-                if (currentPlayerTimeRemaining <= 0) {
-                    players[currentPlayerIndex].notifyTimeout();
-                    players[1 - currentPlayerIndex].notifyWin(players[1 - currentPlayerIndex].getName());
-                    players[currentPlayerIndex].notifyWin(players[1 - currentPlayerIndex].getName());
-                    gameOver = true;
-                    winner=players[1 - currentPlayerIndex];
-                }
-            }
-        }, 1000, 1000); // Decrease currentPlayerTimeRemaining every second
     }
 
     public synchronized boolean isGameOver() {
@@ -199,21 +158,6 @@ class Game {
         return gameStarted;
     }
 
-    public int getTimeLimitSeconds() {
-        return timeLimitSeconds;
-    }
-
-    public Timer getTurnTimer() {
-        return turnTimer;
-    }
-
-    public int getCurrentPlayerTimeRemaining() {
-        return currentPlayerTimeRemaining;
-    }
-
-    public long getTurnStartTime() {
-        return turnStartTime;
-    }
     public Player getWinner()
     {
         return winner;
@@ -231,5 +175,13 @@ class Game {
         }
 
         return names.toString();
+    }
+
+    public void setTimeLimit(String timeLimit) {
+        this.timeLimit = timeLimit;
+    }
+
+    public String getTimeLimit() {
+        return timeLimit;
     }
 }

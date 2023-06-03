@@ -13,8 +13,6 @@ class Player {
     private BufferedReader input;
     private PrintWriter output;
     private Socket socket;
-    private Timer timer;
-    private int timeRemaining;
 
     public Player(String name, char symbol, Socket socket) {
         this.name = name;
@@ -26,12 +24,6 @@ class Player {
         } catch (IOException e) {
             System.err.println("Error creating input/output streams for player: " + e.getMessage());
         }
-        timer = new Timer();
-        timeRemaining = 600; // 60 seconds by default
-    }
-
-    public int getTimeRemaining() {
-        return timeRemaining;
     }
 
     public String getName() {
@@ -97,13 +89,5 @@ class Player {
 
     public void setSocket(Socket socket) {
         this.socket = socket;
-    }
-
-    public void setTimer(Timer timer) {
-        this.timer = timer;
-    }
-
-    public void setTimeRemaining(int timeRemaining) {
-        this.timeRemaining = timeRemaining;
     }
 }
