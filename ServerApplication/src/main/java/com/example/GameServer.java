@@ -311,7 +311,11 @@ public class GameServer {
                         System.out.println("gameover");
                         GameHistory gameDb=findGameByLobbyNameInDb(game.getLobbyName());
                         restTemplate.put("http://localhost:8000/api/game-history/{id}/status?status={status}", null,gameDb.getId(),"stopped");
-                        exportDataToCSV();
+                        Long winnerId=findPlayerByNameInDb(game.getWinner().getName()).getId();
+                        String dbResult="Winner: player name = "+game.getWinner().getName()+", player id = "+winnerId ;
+                        restTemplate.put("http://localhost:8000/api/game-history/{id}/result?result={result}", null,gameDb.getId(), dbResult);
+
+                        // exportDataToCSV();
                         broadcastMessage(game, "GAME_OVER");
                         setGameToNullToAllClientThreads(game);
                         games.remove(game);
@@ -323,14 +327,14 @@ public class GameServer {
                         {
                             for(Tournament findTournament:tournaments.values())
                             {
-                                System.out.println(findTournament.getLobbyName()+ findTournament.isTournamentOver());
+                                System.out.println(findTournament.getLobbyName()+"-"+ findTournament.isTournamentOver());
                                 if(findTournament.isTournamentOver()==false)
                                 {
                                     findTournament.getTournamentWinners().add(game.getWinner());
                                     System.out.println(findTournament.getTournamentWinners().size());
                                     if(findTournament.getNumberOfPlayerForRound()==findTournament.getTournamentWinners().size())
                                     {
-                                        System.out.println("incepe runda doi");
+                                        System.out.println("incepe o noua runda");
                                         newRound(findTournament);
                                     }
                                 }
@@ -454,7 +458,7 @@ public class GameServer {
     public void exportDataToCSV() {
         String url = "jdbc:postgresql://localhost:5432/Gomoku";
         String username = "postgres";
-        String password = "password";
+        String password = "AnaMaria";
 
         try {
             // Establish a connection to the PostgreSQL database
@@ -588,17 +592,46 @@ public class GameServer {
         if(tournament.getTournamentWinners().size()==tournament.getNumberOfPlayerForRound()) {
 
             // Obținem câștigătorii din cele patru jocuri inițiale
-            for (Game game : tournament.getTournamentGames()) {
-                Player winner = game.getWinner();
-                if (winner != null) {
-                    tournament.getTournamentWinners().add(winner);
-                }
-                tournament.getTournamentGames().remove(game);
-            }
+           // System.out.println(tournament.getTournamentWinners().size()+"-winnerii initiali, inainte de initializare");
+           if(tournament.getTournamentWinners().size()!=tournament.getNumberOfPlayerForRound())
+           {
+               System.out.println("nu s au fcaut mutari");
+               for (Game game : tournament.getTournamentGames()) {
+                   //System.out.println(game.getLobbyName());
+                   Player winner = game.getWinner();
+                   //System.out.println(winner.getName());
+                   if (winner != null) {
+                       System.out.println("citi winneri avem");
+                       tournament.getTournamentWinners().add(winner);
+                   }
+                   // tournament.getTournamentGames().remove(game);
+               }
+           }
+
+            // eliminam toate jocurile vechi din lista de jocuri a turneului
+            tournament.getTournamentGames().clear();
 
             // Amestecăm lista de câștigători
             Collections.shuffle(tournament.getTournamentWinners());
-
+            /**
+             * modifica lista de clientthreads pentru noua runda
+             */
+            Iterator<ClientThread> iterator = tournament.getClientThreads().iterator();
+            while (iterator.hasNext()) {
+                ClientThread thread = iterator.next();
+                int out = 1;
+                for (Player player : tournament.getTournamentWinners()) {
+                    if (player.equals(thread.getClientPlayer())) {
+                        // Clientul încă există, păstrăm threadul
+                        out = 0;
+                        break;
+                    }
+                }
+                if (out == 1) {
+                    iterator.remove();
+                }
+            }
+            System.out.println(tournament.getTournamentWinners().size());
             // Împărțim câștigătorii în perechi și îi adăugăm în jocurile noi
             for (int i = 0; i < tournament.getTournamentWinners().size(); i += 2) {
                 Player player1 = tournament.getTournamentWinners().get(i);
@@ -631,10 +664,57 @@ public class GameServer {
                     broadcastMessage(game, "Player " + player2.getName() + " joined the game: " + player2.getSymbol());
                     // Adăugam jocul la lista de jocuri din turneu
                     tournament.getTournamentGames().add(game);
+                    //System.out.println(tournament.getClientThreads().size());
+                    for(ClientThread thread:tournament.getClientThreads())
+                    {
+                        if(thread.getClientPlayer().equals(player1) || thread.getClientPlayer().equals(player2) )
+                        {
+                            thread.setGame(game);
+                            thread.sendResponse("NEW ROUND!");
+
+                        }
+                    }
+                }
+
+            }
+
+            if(tournament.getTournamentGames().size()==tournament.getNumberOfPlayerForRound()/2)
+            {
+                System.out.println("start new round");
+                Set<String> keys = tournaments.keySet();
+                Iterator<String> it = keys.iterator();
+                String lastKey = null;
+                while (it.hasNext()) {
+                    lastKey = it.next();
+                }
+                 tournament= tournaments.get(lastKey);
+                //System.out.println(tournament.getLobbyName());
+                for(Game game:tournament.getTournamentGames())
+                {
+                    System.out.println(game.getLobbyName());
+                    game.start();
+                    Player currentPlayer = game.getCurrentPlayer();
+                    System.out.println(currentPlayer.getName());
+                    System.out.println("Game started! It's " + currentPlayer.getName() + "'s turn.");
+                    broadcastMessage(game, "Game started! It's " + currentPlayer.getName() + "'s turn.");
+                    //clientThread.sendResponse("Game started! It's " + currentPlayer.getName() + "'s turn.");
+                    /**
+                     * cautam threadul playerilor si trimitem raspunsul clientului
+                     */
+                    for(ClientThread thread:tournament.getClientThreads())
+                    {
+                        if(thread.getClientPlayer().equals(currentPlayer))
+                        {
+                            thread.sendResponse("Game started! It's " + currentPlayer.getName() + "'s turn.");
+                        }
+                    }
+                    currentPlayer.notifyTurn();
                 }
             }
             // setam jucatorii pentru urmatoarea runda
             tournament.setNumberOfPlayerForRound(2);
+            // golim lista winner-ilor din runda anterioara pentru noua runda
+            tournament.getTournamentWinners().clear();
         }
     }
 
