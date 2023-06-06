@@ -157,7 +157,7 @@ public class GameServer {
                 Tournament tournament = findTournamentByLobbyName(lobbyName);
                 if (tournamentDb != null && tournament.getTournamentPlayers().size() < 8) {
                     // Create a new player and add them to the game
-                    Player player = new Player(parts[2], 'O', clientThread.getClientSocket());
+                    Player player = new Player(parts[2], '0', clientThread.getClientSocket());
                     tournament.getTournamentPlayers().add(player);
                     clientThread.setTournament(tournament);
                     clientThread.setClientPlayer(player);
@@ -165,6 +165,24 @@ public class GameServer {
                     DataBasePlayer dbPlayer = new DataBasePlayer(player.getName());
                     DataBasePlayer addedPlayer = restTemplate.postForObject("http://localhost:8000/api/players", dbPlayer, DataBasePlayer.class);
                     System.out.println("Added Player: " + addedPlayer.getName());
+                    long playerId=addedPlayer.getId();
+                    int updatePlayerId=tournament.getTournamentPlayers().size();
+                    switch(updatePlayerId)
+                    {   case 2: restTemplate.put("http://localhost:8000/api/tournament-history/{id}/player2Id?playerId={playerId}", null, tournamentDb.getId(), playerId);
+                            break;
+                        case 3: restTemplate.put("http://localhost:8000/api/tournament-history/{id}/player3Id?playerId={playerId}", null, tournamentDb.getId(), playerId);
+                            break;
+                        case 4: restTemplate.put("http://localhost:8000/api/tournament-history/{id}/player4Id?playerId={playerId}", null, tournamentDb.getId(), playerId);
+                            break;
+                        case 5: restTemplate.put("http://localhost:8000/api/tournament-history/{id}/player5Id?playerId={playerId}", null, tournamentDb.getId(), playerId);
+                            break;
+                        case 6: restTemplate.put("http://localhost:8000/api/tournament-history/{id}/player6Id?playerId={playerId}", null, tournamentDb.getId(), playerId);
+                            break;
+                        case 7: restTemplate.put("http://localhost:8000/api/tournament-history/{id}/player7Id?playerId={playerId}", null, tournamentDb.getId(), playerId);
+                            break;
+                        case 8: restTemplate.put("http://localhost:8000/api/tournament-history/{id}/player8Id?playerId={playerId}", null, tournamentDb.getId(), playerId);
+                            break;
+                    }
                     clientThread.sendResponse("TOURNAMENT_JOINED");
                     clientThread.sendResponse("Joined: " + tournament.getPlayerNames());
 
@@ -204,7 +222,7 @@ public class GameServer {
 
                 if (gameDb != null && gameDb.getPlayer2Id() == null) {
                     // Create a new player and add them to the game
-                    Player player = new Player(parts[2], 'O', clientThread.getClientSocket());
+                    Player player = new Player(parts[2], '0', clientThread.getClientSocket());
                     DataBasePlayer dbPlayer = new DataBasePlayer(player.getName());
                     DataBasePlayer addedPlayer = restTemplate.postForObject("http://localhost:8000/api/players", dbPlayer, DataBasePlayer.class);
                     System.out.println("Added Player: " + addedPlayer.getName());
@@ -331,11 +349,12 @@ public class GameServer {
                                 if(findTournament.isTournamentOver()==false)
                                 {
                                     findTournament.getTournamentWinners().add(game.getWinner());
-                                    System.out.println(findTournament.getTournamentWinners().size());
+                                    //System.out.println(findTournament.getTournamentWinners().size());
                                     if(findTournament.getNumberOfPlayerForRound()==findTournament.getTournamentWinners().size())
                                     {
                                         System.out.println("incepe o noua runda");
                                         newRound(findTournament);
+
                                     }
                                 }
                                 // verificam daca s-a terminat turneul
@@ -344,6 +363,11 @@ public class GameServer {
                                     System.out.println("tournament over");
                                     tournamentInProgress=false;
                                     findTournament.setFinalGame(game);
+                                    TournamentHistory dbTournament =findTournamentByLobbyNameInDb(findTournament.getLobbyName());
+                                    String resultTournament="Playerul "+ findTournament.getFinalGame().getWinner().getName()+" won the tournament!";
+                                    System.out.println(dbTournament.getId());
+                                    restTemplate.put("http://localhost:8000/api/tournament-history/{id}/result?result={result}", null,dbTournament.getId(), resultTournament);
+                                    restTemplate.put("http://localhost:8000/api/tournament-history/{id}/status?status={status}", null,dbTournament.getId(), "stopped");
                                 }
 
                             }
@@ -513,25 +537,26 @@ public class GameServer {
             // setam jucatorii pentru urmatoarea runda
             tournament.setNumberOfPlayerForRound(4);
             //identificam id-urile jucatorilor
-            long id1=0,id2=0,id3=0,id4=0,id5=0,id6=0,id7=0,id8=0;
-            for(int i=0;i<tournament.getTournamentPlayers().size();i++)
-            {
-                long id=findPlayerByNameInDb(tournament.getTournamentPlayers().get(i).getName()).getId();
-                switch (i){
-                    case 0: id1=id;
-                    case 1: id2=id;
-                    case 2: id3=id;
-                    case 3: id4=id;
-                    case 4: id5=id;
-                    case 5: id6=id;
-                    case 6: id7=id;
-                    case 7: id8=id;
-                }
-            }
-            List<Long> playerIds = Arrays.asList(id1, id2, id3, id4, id5, id6, id7, id8);
-            long tournementId=findTournamentByLobbyNameInDb(tournament.getLobbyName()).getId();
+//            long id1=0L,id2=0L,id3=0L,id4=0L,id5=0L,id6=0L,id7=0L,id8=0L;
+//            for(int i=0;i<tournament.getTournamentPlayers().size();i++)
+//            {
+//                long id=findPlayerByNameInDb(tournament.getTournamentPlayers().get(i).getName()).getId();
+//                switch (i){
+//                    case 0: id1=id;
+//                    case 1: id2=id;
+//                    case 2: id3=id;
+//                    case 3: id4=id;
+//                    case 4: id5=id;
+//                    case 5: id6=id;
+//                    case 6: id7=id;
+//                    case 7: id8=id;
+//                }
+//            }
+//            List<Long> playerIds = Arrays.asList(id1, id2, id3, id4, id5, id6, id7, id8);
+//            System.out.println(playerIds);
+//            long tournementId=findTournamentByLobbyNameInDb(tournament.getLobbyName()).getId();
             // adaugam id-ul jucatorilor in baza de date a turneului
-            // restTemplate.put("http://localhost:8000/api/tournament-history/{id}/update-players", null, tournementId,playerIds);
+            // restTemplate.put("http://localhost:8000/api/tournament-history/{id}/update_players?update_players={update_players}", null, tournementId,playerIds);
             // Generam perechi aleatorii de jucători
             while (!tournament.getTournamentPlayers().isEmpty()) {
                 int index1 = (int) (Math.random() * tournament.getTournamentPlayers().size());
@@ -555,7 +580,7 @@ public class GameServer {
                     System.out.println("Added Game: " + addedGame.getId());
                     // repartizam cate un simbol playerilor
                     player1.setSymbol('X');
-                    player2.setSymbol('O');
+                    player2.setSymbol('0');
                     // bagam playerii in joc
                     game.setLobbyName(randomName);
                     game.join(player1);
@@ -652,7 +677,7 @@ public class GameServer {
                     System.out.println("Added Game: " + addedGame.getId());
                     // repartizam cate un simbol playerilor
                     player1.setSymbol('X');
-                    player2.setSymbol('O');
+                    player2.setSymbol('0');
                     // bagam playerii in joc
                     game.setLobbyName(randomName);
                     game.join(player1);
@@ -710,6 +735,10 @@ public class GameServer {
                     }
                     currentPlayer.notifyTurn();
                 }
+            }
+            if(tournament.getNumberOfPlayerForRound()==2)
+            {
+                tournament.setFinalGame(tournament.getTournamentGames().get(0));
             }
             // setam jucatorii pentru urmatoarea runda
             tournament.setNumberOfPlayerForRound(2);
