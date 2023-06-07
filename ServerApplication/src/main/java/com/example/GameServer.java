@@ -123,7 +123,7 @@ public class GameServer {
                     return; // Încheiem executarea metodei, deoarece nu putem crea un nou turneu
                 }
                 tournamentInProgress=true;
-                Player player = new Player(parts[2], 'X', clientThread.getClientSocket());
+                Player player = new Player(parts[2], '-', clientThread.getClientSocket());
                 // adaugam playerii in baza de date
                 DataBasePlayer dbPlayer = new DataBasePlayer(player.getName());
                 DataBasePlayer addedPlayer = restTemplate.postForObject("http://localhost:8000/api/players", dbPlayer, DataBasePlayer.class);
@@ -157,7 +157,7 @@ public class GameServer {
                 Tournament tournament = findTournamentByLobbyName(lobbyName);
                 if (tournamentDb != null && tournament.getTournamentPlayers().size() < 8) {
                     // Create a new player and add them to the game
-                    Player player = new Player(parts[2], '0', clientThread.getClientSocket());
+                    Player player = new Player(parts[2], '-', clientThread.getClientSocket());
                     tournament.getTournamentPlayers().add(player);
                     clientThread.setTournament(tournament);
                     clientThread.setClientPlayer(player);
@@ -584,9 +584,8 @@ public class GameServer {
                     // bagam playerii in joc
                     game.setLobbyName(randomName);
                     game.join(player1);
-                    System.out.println("Player " + player1.getName() + " joined the game: " + player1.getSymbol());
-                    broadcastMessage(game, "Player " + player2.getName() + " joined the game: " + player2.getSymbol());
                     game.join(player2);
+
                     for(ClientThread thread:tournament.getClientThreads())
                     {
                         if(thread.getClientPlayer().equals(player1) || thread.getClientPlayer().equals(player2) )
@@ -594,7 +593,18 @@ public class GameServer {
                             thread.setGame(game);
                         }
                     }
-                    System.out.println("Player " + player1.getName() + " joined the game: " + player1.getSymbol());
+                    for(Player pl: game.getPlayers())
+                    {
+                        if(pl.equals(game.getCurrentPlayer()))
+                        {
+                            pl.setSymbol('X');
+                        }
+                        else
+                        {
+                            pl.setSymbol('0');
+                        }
+                    }
+                    broadcastMessage(game, "Player " + player1.getName() + " joined the game: " + player1.getSymbol());
                     broadcastMessage(game, "Player " + player2.getName() + " joined the game: " + player2.getSymbol());
                     // Adăugam jocul la lista de jocuri din turneu
                     tournament.getTournamentGames().add(game);
@@ -681,11 +691,11 @@ public class GameServer {
                     // bagam playerii in joc
                     game.setLobbyName(randomName);
                     game.join(player1);
+                    game.join(player2);
                     games.put(game.getLobbyName(), game);
                     System.out.println("Player " + player1.getName() + " joined the game: " + player1.getSymbol());
-                    broadcastMessage(game, "Player " + player2.getName() + " joined the game: " + player2.getSymbol());
-                    game.join(player2);
-                    System.out.println("Player " + player1.getName() + " joined the game: " + player1.getSymbol());
+                    broadcastMessage(game, "Player " + player1.getName() + " joined the game: " + player1.getSymbol());
+                    System.out.println("Player " + player2.getName() + " joined the game: " + player2.getSymbol());
                     broadcastMessage(game, "Player " + player2.getName() + " joined the game: " + player2.getSymbol());
                     // Adăugam jocul la lista de jocuri din turneu
                     tournament.getTournamentGames().add(game);
@@ -697,6 +707,21 @@ public class GameServer {
                             thread.setGame(game);
                             thread.sendResponse("NEW ROUND!");
 
+                        }
+                    }
+                    for(Player pl: game.getPlayers())
+                    {
+                        System.out.println(pl.getName());
+                        System.out.println(game.getCurrentPlayer().getName());
+                        if(pl.equals(game.getCurrentPlayer()))
+                        {
+                            System.out.println("s a pus X");
+                            pl.setSymbol('X');
+                        }
+                        else
+                        {
+                            System.out.println("s a pus 0");
+                            pl.setSymbol('0');
                         }
                     }
                 }

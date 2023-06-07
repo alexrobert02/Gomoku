@@ -74,6 +74,15 @@ public class GameClient extends Application {
                         if (response.contains ("WINNER")) {
                             ui.showWinnerPage(response);
                         }
+                        if (response.contains ("ROUND")) {
+                            ui.showNewRoundPage(response);
+                            try {
+                                // Pauza de 10 secunde
+                                Thread.sleep(10000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
                         if (response.contains ("Game started!")) {
                             System.out.println("a inceput");
                             ui.showGameBoardScene();

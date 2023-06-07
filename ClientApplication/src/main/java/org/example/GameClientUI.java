@@ -13,9 +13,11 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import javax.swing.*;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -145,6 +147,18 @@ public class GameClientUI extends Application {
     public void showGameScene() {
         root = new BorderPane();
         root.setPadding(new Insets(10, 10, 10, 10));
+
+        Text title = new Text("GOMOKU");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 60));
+        title.setFill(Color.ORANGE); // Setează culoarea dorită pentru titlu
+
+        VBox titleBox = new VBox(10);
+        titleBox.setAlignment(Pos.CENTER);
+        titleBox.getChildren().add(title);
+        titleBox.setPadding(new Insets(100, 0, 0, 0)); // Ajustează marginea superioară
+
+        root.setTop(titleBox);
+
 
         chatArea = new TextArea();
         chatArea.setEditable(false);
@@ -817,4 +831,20 @@ public class GameClientUI extends Application {
         Platform.runLater(() -> player2TimerLabel.setText("Player 2 Timer: " + player2Timer));
     }
 
+    public void showNewRoundPage(String response) {
+        Platform.runLater(() -> {
+            BorderPane winnerRoot = new BorderPane();
+            winnerRoot.setPadding(new Insets(10, 10, 10, 10));
+
+            Label newRoundLabel = new Label("NEW ROUND");
+            newRoundLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+            winnerRoot.setCenter(newRoundLabel);
+
+            Scene newRoundScene = new Scene(winnerRoot, 1000, 600);
+//            Stage stage = (Stage) gameScenePane.getScene().getWindow();
+            stage.setScene(newRoundScene);
+            stage.show();
+
+        });
+    }
 }
