@@ -116,6 +116,12 @@ public class GameClient extends Application {
                             ui.stopPlayer1Timer();
                             ui.stopPlayer2Timer();
                         }
+                        if (response.contains ("SYMBOL_X")) {
+                            ui.setPlayerIndex(0);
+                        }
+                        if (response.contains ("SYMBOL_O")) {
+                            ui.setPlayerIndex(1);
+                        }
                     }
                 } catch (IOException e) {
                     ui.appendMessage("Error reading server response: " + e.getMessage());

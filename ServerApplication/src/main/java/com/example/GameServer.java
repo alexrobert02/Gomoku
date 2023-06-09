@@ -133,6 +133,7 @@ public class GameServer {
                 restTemplate.postForObject("http://localhost:8000/api/tournament-history", tournamentDb, TournamentHistory.class);
                 // creem turneul
                 Tournament tournament = new Tournament(tournamentDb);
+                tournament.setTimeLimit(parts[3]);
                 tournament.setLobbyName(lobbyName);
                 clientThread.setTournament(tournament);
                 clientThread.setClientPlayer(player);
@@ -284,6 +285,7 @@ public class GameServer {
                 for(Game game:tournament.getTournamentGames())
                 {
                     System.out.println(game.getLobbyName());
+                    broadcastMessage(game, "Time limit: " + tournament.getTimeLimit());
                     game.start();
                     Player currentPlayer = game.getCurrentPlayer();
                     System.out.println(currentPlayer.getName());
@@ -349,6 +351,9 @@ public class GameServer {
                                 if(findTournament.isTournamentOver()==false)
                                 {
                                     findTournament.getTournamentWinners().add(game.getWinner());
+                                    for (Game everygame : findTournament.getTournamentGames()) {
+                                        broadcastMessage(everygame, "GAME_OVER");
+                                    }
                                     //System.out.println(findTournament.getTournamentWinners().size());
                                     if(findTournament.getNumberOfPlayerForRound()==findTournament.getTournamentWinners().size())
                                     {
@@ -580,6 +585,8 @@ public class GameServer {
                     System.out.println("Added Game: " + addedGame.getId());
                     // repartizam cate un simbol playerilor
                     player1.setSymbol('X');
+
+
                     player2.setSymbol('0');
                     // bagam playerii in joc
                     game.setLobbyName(randomName);
@@ -588,9 +595,16 @@ public class GameServer {
 
                     for(ClientThread thread:tournament.getClientThreads())
                     {
+                        if(thread.getClientPlayer().equals(player1)){
+                            thread.sendResponse("SYMBOL_X");
+                        }
+                        if(thread.getClientPlayer().equals(player2)){
+                            thread.sendResponse("SYMBOL_O");
+                        }
                         if(thread.getClientPlayer().equals(player1) || thread.getClientPlayer().equals(player2) )
                         {
                             thread.setGame(game);
+
                         }
                     }
                     for(Player pl: game.getPlayers())
@@ -606,6 +620,7 @@ public class GameServer {
                     }
                     broadcastMessage(game, "Player " + player1.getName() + " joined the game: " + player1.getSymbol());
                     broadcastMessage(game, "Player " + player2.getName() + " joined the game: " + player2.getSymbol());
+                    broadcastMessage(game, "Time limit: " + tournament.getTimeLimit());
                     // Adăugam jocul la lista de jocuri din turneu
                     tournament.getTournamentGames().add(game);
                     //game.start();
@@ -697,11 +712,18 @@ public class GameServer {
                     broadcastMessage(game, "Player " + player1.getName() + " joined the game: " + player1.getSymbol());
                     System.out.println("Player " + player2.getName() + " joined the game: " + player2.getSymbol());
                     broadcastMessage(game, "Player " + player2.getName() + " joined the game: " + player2.getSymbol());
+                    broadcastMessage(game, "Time limit: " + tournament.getTimeLimit());
                     // Adăugam jocul la lista de jocuri din turneu
                     tournament.getTournamentGames().add(game);
                     //System.out.println(tournament.getClientThreads().size());
                     for(ClientThread thread:tournament.getClientThreads())
                     {
+                        if(thread.getClientPlayer().equals(player1)){
+                            thread.sendResponse("SYMBOL_X");
+                        }
+                        if(thread.getClientPlayer().equals(player2)){
+                            thread.sendResponse("SYMBOL_O");
+                        }
                         if(thread.getClientPlayer().equals(player1) || thread.getClientPlayer().equals(player2) )
                         {
                             thread.setGame(game);
@@ -742,6 +764,7 @@ public class GameServer {
                 for(Game game:tournament.getTournamentGames())
                 {
                     System.out.println(game.getLobbyName());
+                    broadcastMessage(game, "Time limit: " + tournament.getTimeLimit());
                     game.start();
                     Player currentPlayer = game.getCurrentPlayer();
                     System.out.println(currentPlayer.getName());

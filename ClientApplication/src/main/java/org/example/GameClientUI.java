@@ -43,6 +43,8 @@ public class GameClientUI extends Application {
     private TimerTask player2TimerTask;
     private Timer player1TimerObj;
     private Timer player2TimerObj;
+    private Label player1TurnLabel;
+    private Label player2TurnLabel;
 
     public GameClientUI(GameClient gameClient) {
         this.gameClient = gameClient;
@@ -75,6 +77,10 @@ public class GameClientUI extends Application {
 
     public void clearInputField() {
         inputField.clear();
+    }
+
+    public void setPlayerIndex(int playerIndex) {
+        this.playerIndex = playerIndex;
     }
 
     public void showLoginScene() {
@@ -286,7 +292,7 @@ public class GameClientUI extends Application {
             String command = ("join_tournament " + lobbyName + " " + username);
             gameClient.sendMessageToServer(command);
             //joinButton.setVisible(false);
-            playerIndex = 1;
+            //playerIndex = 1;
             joinButton.setVisible(false);
             joinGameLabel.setVisible(false);
         });
@@ -352,9 +358,9 @@ public class GameClientUI extends Application {
                 player2Timer = Long.parseLong(timeLimitField.getText());
             }
             hostTournamentStage.close();
-            String command = ("create_tournament " + lobbyName + " " + username);
+            String command = ("create_tournament " + lobbyName + " " + username + " " + timeLimit);
             gameClient.sendMessageToServer(command);
-            playerIndex = 0;
+            //playerIndex = 0;
             showStartScene(lobbyName);
         });
 
@@ -665,8 +671,17 @@ public class GameClientUI extends Application {
 
         gameBoardRoot.setCenter(gameBoardGrid);
 
-        VBox timerBox = new VBox(10, player1TimerLabel, player2TimerLabel);
+        player1TurnLabel = new Label("YOUR TURN");
+        player2TurnLabel = new Label("YOUR TURN");
+
+        VBox player1Label = new VBox(player1TimerLabel, player1TurnLabel);
+        VBox player2Label = new VBox(player2TimerLabel, player2TurnLabel);
+
+
+        HBox timerBox = new HBox(10, player1Label, player2Label);
         timerBox.setAlignment(Pos.CENTER);
+
+
         gameBoardRoot.setTop(timerBox);
 
         chatArea = new TextArea();

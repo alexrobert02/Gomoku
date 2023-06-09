@@ -16,12 +16,21 @@ public class Tournament {
     private boolean tournamentStarted;
     private Game finalGame;
     private int numberOfPlayerForRound;
+    private String timeLimit;
 
     public Tournament(TournamentHistory tournamentDb) {
         this.tournamentDb=tournamentDb;
         this.tournamentOver=false;
         this.tournamentStarted=false;
         this.numberOfPlayerForRound=8;
+    }
+
+    public String getTimeLimit() {
+        return timeLimit;
+    }
+
+    public void setTimeLimit(String timeLimit) {
+        this.timeLimit = timeLimit;
     }
 
     public String getLobbyName() {
