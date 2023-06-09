@@ -252,7 +252,7 @@ public class GameClientUI extends Application {
         VBox centerContainer = new VBox(20);
         centerContainer.setAlignment(Pos.CENTER);
 
-        Label joinGameLabel = new Label("Insert game lobby:");
+        Label joinGameLabel = new Label("Insert tournament lobby:");
         joinGameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 30));
         joinGameLabel.setTextFill(Color.BLACK);
         joinGameLabel.setAlignment(Pos.CENTER);
@@ -576,8 +576,8 @@ public class GameClientUI extends Application {
         centerVBox.maxWidth(400);
 
         // Add the elements to the VBox as needed
-        Label gameLobbyLabel = new Label("Game lobby: " + lobbyName);
-        gameLobbyLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        Label gameLobbyLabel = new Label("Lobby name: " + lobbyName);
+        gameLobbyLabel.setFont(Font.font("Arial", FontWeight.BOLD, 30));
         gameLobbyLabel.setTextFill(Color.BLACK);
         gameLobbyLabel.setPadding(new Insets(10, 0, 0, 0));
         centerVBox.getChildren().add(gameLobbyLabel);
@@ -627,6 +627,18 @@ public class GameClientUI extends Application {
         player1TimerLabel = new Label("Player 1 Timer: " + player1Timer);
         player2TimerLabel = new Label("Player 2 Timer: " + player2Timer);
 
+        player1TurnLabel = new Label("YOUR TURN");
+        player2TurnLabel = new Label("YOUR TURN");
+
+        VBox player1Label = new VBox(player1TimerLabel, player1TurnLabel);
+        VBox player2Label = new VBox(player2TimerLabel, player2TurnLabel);
+
+
+        if(playerIndex == 1) {
+            player1TurnLabel.setVisible(false);
+        }
+        player2TurnLabel.setVisible(false);
+
         gameBoardCells = new Label[rows][columns];
         // Add cells to the game board
         for (int row = 0; row < rows; row++) {
@@ -655,12 +667,16 @@ public class GameClientUI extends Application {
                     gameClient.sendMessageToServer("move " + finalRow + " " + finalCol);
 
                     if(playerIndex == 1) {
-                        stopPlayer2Timer(); // Stop player 1 timer
-                        startPlayer1Timer(); // Start player 2 timer
+                        stopPlayer2Timer();
+                        startPlayer1Timer();
+                        //player1TurnLabel.setVisible(true);
+                        player2TurnLabel.setVisible(false);
                     }
                     else {
                         startPlayer2Timer();
                         stopPlayer1Timer();
+                        player1TurnLabel.setVisible(false);
+                        //player2TurnLabel.setVisible(true);
                     }
                 });
 
@@ -670,12 +686,6 @@ public class GameClientUI extends Application {
         }
 
         gameBoardRoot.setCenter(gameBoardGrid);
-
-        player1TurnLabel = new Label("YOUR TURN");
-        player2TurnLabel = new Label("YOUR TURN");
-
-        VBox player1Label = new VBox(player1TimerLabel, player1TurnLabel);
-        VBox player2Label = new VBox(player2TimerLabel, player2TurnLabel);
 
 
         HBox timerBox = new HBox(10, player1Label, player2Label);
@@ -742,10 +752,12 @@ public class GameClientUI extends Application {
                     cellLabel.setText("O");
                     startPlayer1Timer();
                     stopPlayer2Timer();
+                    player1TurnLabel.setVisible(true);
                 } else {
                     cellLabel.setText("X");
-                    stopPlayer1Timer(); // Stop player 1 timer
-                    startPlayer2Timer(); // Start player 2 timer
+                    stopPlayer1Timer();
+                    startPlayer2Timer();
+                    player2TurnLabel.setVisible(true);
                 }
             });
         }
@@ -817,6 +829,7 @@ public class GameClientUI extends Application {
 
     public void startPlayer2Timer() {
         stopPlayer2Timer(); // Stop the timer if it's already running
+
         player2TimerObj = new Timer();
         player2TimerTask = new TimerTask() {
             @Override
