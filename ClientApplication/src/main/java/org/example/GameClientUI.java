@@ -349,9 +349,9 @@ public class GameClientUI extends Application {
 
             //Process the input and create the game
             if (timeLimitField.getText().isEmpty()) {
-                player1Timer = 0;
-                player2Timer = 0;
-                timeLimit = "0";
+                player1Timer = 60;
+                player2Timer = 60;
+                timeLimit = "60";
             }
             else {
                 player1Timer = Long.parseLong(timeLimitField.getText());
