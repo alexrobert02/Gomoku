@@ -33,7 +33,7 @@ class Board {
         for (int c = col - 4; c <= col + 4; c++) {
             if (c >= 0 && c < SIZE && cells[row][c] == symbol) {
                 count++;
-                if (count == 2) {
+                if (count == 5) {
                     return true;
                 }
             } else {
@@ -46,7 +46,7 @@ class Board {
         for (int r = row - 4; r <= row + 4; r++) {
             if (r >= 0 && r < SIZE && cells[r][col] == symbol) {
                 count++;
-                if (count == 2) {
+                if (count == 5) {
                     return true;
                 }
             } else {
@@ -61,7 +61,7 @@ class Board {
             int c = col + d;
             if (r >= 0 && r < SIZE && c >= 0 && c < SIZE && cells[r][c] == symbol) {
                 count++;
-                if (count == 2) {
+                if (count == 5) {
                     return true;
                 }
             } else {
@@ -76,7 +76,7 @@ class Board {
             int c = col + d;
             if (r >= 0 && r < SIZE && c >= 0 && c < SIZE && cells[r][c] == symbol) {
                 count++;
-                if (count == 2) {
+                if (count == 5) {
                     return true;
                 }
             } else {
